@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PSN Telemetry & Wrapped Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      background: radial-gradient(circle at top, #0f172a 0%, #020617 100%);
+      color: #f8fafc;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+    .ps-card {
+      background: rgba(30, 41, 59, 0.55);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    .ps-card-interactive:hover {
+      transform: translateY(-4px);
+      border-color: rgba(59, 130, 246, 0.6);
+      box-shadow: 0 12px 30px -10px rgba(37, 99, 235, 0.35);
+      cursor: pointer;
+    }
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: #090d16; }
+    ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #3b82f6; }
+  </style>
+</head>
+<body class="min-h-screen p-4 md:p-8">
+  <div class="max-w-7xl mx-auto space-y-8">
+    
+    <!-- Header, Sync Button & Trophy Summary -->
+    <header class="ps-card rounded-2xl p-6 md:p-8 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+      <div>
+        <div class="flex flex-wrap items-center gap-3">
+          <span class="px-3 py-1 bg-blue-600 text-xs font-bold uppercase tracking-wider rounded-full">PSN Telemetry</span>
+          <span id="last-updated" class="text-xs text-slate-400">Loading...</span>
+          <button 
+            id="sync-btn" 
+            onclick="triggerLiveSync()"
+            class="px-3 py-1 bg-slate-800 hover:bg-blue-600 border border-slate-700 hover:border-blue-400 text-xs font-semibold rounded-full transition flex items-center gap-1.5"
+          >
+            <span id="sync-icon">🔄</span>
+            <span id="sync-text">Sync Live PSN Data</span>
+          </button>
+        </div>
+        <h1 class="text-3xl md:text-4xl font-extrabold mt-3 tracking-tight">PlayStation Hall of Fame</h1>
+        <p class="text-slate-400 text-sm mt-1">Deep playtime telemetry, quirky habits & trophy inspector</p>
+      </div>
+
+      <!-- Trophy Counters -->
+      <div class="flex flex-wrap items-center gap-4 bg-slate-900/90 p-4 rounded-xl border border-slate-800 w-full lg:w-auto justify-between lg:justify-start">
+        <div class="pr-4 border-r border-slate-800">
+          <div class="text-[11px] text-slate-400 uppercase font-semibold">Trophy Level</div>
+          <div id="trophy-level" class="text-2xl font-black text-blue-400">--</div>
+        </div>
+        <div class="flex gap-5 text-center">
+          <div>
+            <div class="text-xs text-slate-400">🏆 Plat</div>
+            <div id="t-plat" class="font-bold text-indigo-300 text-lg">--</div>
+          </div>
+          <div>
+            <div class="text-xs text-slate-400">🥇 Gold</div>
+            <div id="t-gold" class="font-bold text-amber-400 text-lg">--</div>
+          </div>
+          <div>
+            <div class="text-xs text-slate-400">🥈 Silver</div>
+            <div id="t-silver" class="font-bold text-slate-300 text-lg">--</div>
+          </div>
+          <div>
+            <div class="text-xs text-slate-400">🥉 Bronze</div>
+            <div id="t-bronze" class="font-bold text-amber-600 text-lg">--</div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Headline Metrics -->
+    <section class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="ps-card p-5 rounded-2xl">
+        <div class="text-xs text-slate-400 uppercase font-semibold">Total Playtime</div>
+        <div id="stat-hours" class="text-3xl font-black mt-1 text-white">--</div>
+        <div id="stat-days" class="text-xs text-blue-400 mt-1">-- full 24h days</div>
+      </div>
+      <div class="ps-card p-5 rounded-2xl">
+        <div class="text-xs text-slate-400 uppercase font-semibold">Games Tracked</div>
+        <div id="stat-games" class="text-3xl font-black mt-1 text-white">--</div>
+        <div id="stat-sessions" class="text-xs text-slate-400 mt-1">-- total launches</div>
+      </div>
+      <div class="ps-card p-5 rounded-2xl">
+        <div class="text-xs text-slate-400 uppercase font-semibold">Avg Session Length</div>
+        <div id="stat-avg-session" class="text-3xl font-black mt-1 text-emerald-400">--</div>
+        <div class="text-xs text-slate-400 mt-1">Every time you boot a game</div>
+      </div>
+      <div class="ps-card p-5 rounded-2xl">
+        <div class="text-xs text-slate-400 uppercase font-semibold">1-Session Graveyard</div>
+        <div id="stat-graveyard" class="text-3xl font-black mt-1 text-rose-400">--</div>
+        <div id="stat-graveyard-pct" class="text-xs text-slate-400 mt-1">Booted once & never touched again</div>
+      </div>
+    </section>
+
+    <!-- Deep Fun Facts Matrix (8 Cards) -->
+    <section>
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="text-lg font-bold tracking-tight text-slate-200">✨ Quirky Telemetry & Fun Facts</h2>
+        <span class="text-xs text-slate-400">Automatically calculated from your play history</span>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="ps-card p-4 rounded-2xl border-l-4 border-l-blue-500">
+          <div class="text-[11px] text-blue-400 font-bold uppercase">👑 Ultimate Time-Sink</div>
+          <div id="fact-most-played" class="text-base font-bold mt-1 truncate">--</div>
+          <div id="fact-most-played-sub" class="text-xs text-slate-400 mt-1">--</div>
+        </div>
+        <div class="ps-card p-4 rounded-2xl border-l-4 border-l-purple-500">
+          <div class="text-[11px] text-purple-400 font-bold uppercase">⚡ Marathon Champion</div>
+          <div id="fact-binge" class="text-base font-bold mt-1 truncate">--</div>
+          <div id="fact-binge-sub" class="text-xs text-slate-400 mt-1">--</div>
+        </div>
+        <div class="ps-card p-4 rounded-2xl border-l-4 border-l-emerald-500">
+          <div class="text-[11px] text-emerald-400 font-bold uppercase">🔄 Most Loyal Boot-Up</div>
+          <div id="fact-sessions" class="text-base font-bold mt-1 truncate">--</div>
+          <div id="fact-sessions-sub" class="text-xs text-slate-400 mt-1">--</div>
+        </div>
+        <div class="ps-card p-4 rounded-2xl border-l-4 border-l-amber-500">
+          <div class="text-[11px] text-amber-400 font-bold uppercase">🐢 Slowest Burn Award</div>
+          <div id="fact-slow-burn" class="text-base font-bold mt-1 truncate">--</div>
+          <div id="fact-slow-burn-sub" class="text-xs text-slate-400 mt-1">--</div>
+        </div>
+        <div class="ps-card p-4 rounded-2xl border-l-4 border-l-pink-500">
+          <div class="text-[11px] text-pink-400 font-bold uppercase">🍬 Trophy Piñata</div>
+          <div id="fact-pinata" class="text-base font-bold mt-1 truncate">--</div>
+          <div id="fact-pinata-sub" class="text-xs text-slate-400 mt-1">--</div>
+        </div>
+        <div class="ps-card p-4 rounded-2xl border-l-4 border-l-cyan-500">
+          <div class="text-[11px] text-cyan-400 font-bold uppercase">⏳ Longest Relationship</div>
+          <div id="fact-span" class="text-base font-bold mt-1 truncate">--</div>
+          <div id="fact-span-sub" class="text-xs text-slate-400 mt-1">--</div>
+        </div>
+        <div class="ps-card p-4 rounded-2xl border-l-4 border-l-rose-500">
+          <div class="text-[11px] text-rose-400 font-bold uppercase">🚪 Fastest "Nope"</div>
+          <div id="fact-nope" class="text-base font-bold mt-1 truncate">--</div>
+          <div id="fact-nope-sub" class="text-xs text-slate-400 mt-1">--</div>
+        </div>
+        <div class="ps-card p-4 rounded-2xl border-l-4 border-l-indigo-500">
+          <div class="text-[11px] text-indigo-400 font-bold uppercase">🎯 Avg Trophy Completion</div>
+          <div id="fact-completion" class="text-base font-bold mt-1 truncate">--</div>
+          <div id="fact-completion-sub" class="text-xs text-slate-400 mt-1">--</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Visual Charts Section -->
+    <section>
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="text-lg font-bold tracking-tight text-slate-200">📊 Visual Habits & Analytics</h2>
+      </div>
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <div class="ps-card p-5 rounded-2xl lg:col-span-2">
+          <h3 class="text-xs font-bold uppercase text-slate-400 mb-3">Top 10 Time-Sinks (Hours Played)</h3>
+          <div class="h-64">
+            <canvas id="chart-top-games"></canvas>
+          </div>
+        </div>
+        <div class="ps-card p-5 rounded-2xl">
+          <h3 class="text-xs font-bold uppercase text-slate-400 mb-3">Trophy Completion Brackets</h3>
+          <div class="h-64 flex items-center justify-center">
+            <canvas id="chart-completion"></canvas>
+          </div>
+        </div>
+        <div class="ps-card p-5 rounded-2xl lg:col-span-2">
+          <h3 class="text-xs font-bold uppercase text-slate-400 mb-3">Playtime by Year Game Was Started</h3>
+          <div class="h-56">
+            <canvas id="chart-yearly"></canvas>
+          </div>
+        </div>
+        <div class="ps-card p-5 rounded-2xl">
+          <h3 class="text-xs font-bold uppercase text-slate-400 mb-3">Hours by Platform</h3>
+          <div class="h-56 flex items-center justify-center">
+            <canvas id="chart-platform"></canvas>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Filter & Search Controls -->
+    <section class="flex flex-col sm:flex-row gap-4 items-center justify-between bg-slate-900/70 p-4 rounded-xl border border-slate-800">
+      <div class="flex items-center gap-3 w-full sm:w-auto">
+        <input 
+          id="search-input" 
+          type="text" 
+          placeholder="Search your games..." 
+          class="w-full sm:w-72 px-4 py-2 rounded-lg bg-slate-800 border border-slate-700 text-sm focus:outline-none focus:border-blue-500"
+        />
+        <span class="text-xs text-slate-400 hidden md:inline">💡 Click any game card to inspect its trophies</span>
+      </div>
+      <div class="flex items-center gap-3 w-full sm:w-auto">
+        <select id="platform-filter" class="px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-sm">
+          <option value="ALL">All Platforms</option>
+          <option value="PS5">PS5 Only</option>
+          <option value="PS4">PS4 Only</option>
+        </select>
+        <select id="sort-select" class="px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-sm">
+          <option value="hours">Most Hours Played</option>
+          <option value="recent">Recently Played</option>
+          <option value="sessions">Most Sessions</option>
+          <option value="binge">Longest Avg Session</option>
+          <option value="progress">Trophy Progress %</option>
+        </select>
+      </div>
+    </section>
+
+    <!-- Game Cards Grid -->
+    <section id="games-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5"></section>
+
+  </div>
+
+  <!-- Individual Game Trophy Modal -->
+  <div id="trophy-modal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-50 hidden items-center justify-center p-4">
+    <div class="ps-card bg-slate-900 rounded-2xl max-w-4xl w-full max-h-[88vh] flex flex-col overflow-hidden border border-slate-700 shadow-2xl">
+      
+      <!-- Modal Header -->
+      <div class="p-5 bg-slate-950/70 border-b border-slate-800 flex items-center justify-between gap-4">
+        <div class="flex items-center gap-4 min-w-0">
+          <img id="modal-game-img" src="" alt="" class="w-16 h-16 rounded-xl object-cover border border-slate-700 shrink-0" />
+          <div class="min-w-0">
+            <div class="flex items-center gap-2">
+              <span id="modal-game-plat" class="px-2 py-0.5 text-[10px] font-bold bg-blue-600 rounded uppercase">PS5</span>
+              <span id="modal-game-hours" class="text-xs text-slate-400"></span>
+            </div>
+            <h2 id="modal-game-title" class="text-xl font-extrabold truncate mt-0.5">Game Title</h2>
+            <p id="modal-game-sub" class="text-xs text-slate-400"></p>
+          </div>
+        </div>
+        <button onclick="closeTrophyModal()" class="p-2 rounded-lg bg-slate-800 hover:bg-rose-600 text-slate-300 hover:text-white transition text-sm font-bold px-3">
+          ✕ ESC
+        </button>
+      </div>
+
+      <!-- Modal Filter Bar -->
+      <div class="px-5 py-3 bg-slate-900/90 border-b border-slate-800 flex items-center justify-between text-xs">
+        <div class="flex gap-2">
+          <button onclick="setModalFilter('ALL')" id="mf-all" class="px-3 py-1 rounded-md bg-blue-600 font-semibold">All Trophies</button>
+          <button onclick="setModalFilter('EARNED')" id="mf-earned" class="px-3 py-1 rounded-md bg-slate-800 hover:bg-slate-700">Unlocked Only</button>
+          <button onclick="setModalFilter('LOCKED')" id="mf-locked" class="px-3 py-1 rounded-md bg-slate-800 hover:bg-slate-700">Locked Only</button>
+        </div>
+        <span id="modal-trophy-count" class="text-slate-400 font-semibold"></span>
+      </div>
+
+      <!-- Modal Trophy List Body -->
+      <div id="modal-trophy-list" class="p-5 overflow-y-auto space-y-2.5 flex-1"></div>
+    </div>
+  </div>
+
+  <script>
+    let allGames = [];
+    let currentModalTrophies = [];
+    let currentModalFilter = "ALL";
+    let charts = {};
+
+    async function loadDashboard() {
+      const res = await fetch("/api/psn-data");
+      const data = await res.json();
+
+      if (data.error) {
+        document.getElementById("last-updated").textContent = data.error;
+        return;
+      }
+
+      populateDashboard(data);
+    }
+
+    function populateDashboard(data) {
+      allGames = (data.mergedGames || []).map(g => {
+        // Ensure backwards compatibility with earlier psn_full_data.json files
+        const rawT = g.rawTrophyData;
+        return {
+          ...g,
+          npCommunicationId: g.npCommunicationId || (rawT ? rawT.npCommunicationId : null),
+          trophyPlatform: g.trophyPlatform || (rawT ? rawT.trophyTitlePlatform : g.platform),
+          trophyProgressVal: g.trophyProgressVal !== undefined ? g.trophyProgressVal : (parseInt(g.trophyProgress) || -1),
+        };
+      });
+
+      const summary = data.trophySummary;
+
+      // Header
+      document.getElementById("last-updated").textContent = `Synced ${new Date(data.fetchedAt).toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "short" })}`;
+      document.getElementById("trophy-level").textContent = `${summary.trophyLevel} (${summary.progress}%)`;
+      document.getElementById("t-plat").textContent = summary.earnedTrophies.platinum;
+      document.getElementById("t-gold").textContent = summary.earnedTrophies.gold;
+      document.getElementById("t-silver").textContent = summary.earnedTrophies.silver;
+      document.getElementById("t-bronze").textContent = summary.earnedTrophies.bronze;
+
+      // Headline Stats
+      const totalHours = allGames.reduce((acc, g) => acc + (g.hours || 0), 0);
+      const totalSessions = allGames.reduce((acc, g) => acc + (g.playCount || 0), 0);
+      const oneAndDone = allGames.filter(g => g.playCount === 1);
+      const avgSessionOverall = totalSessions > 0 ? Math.round((totalHours * 60) / totalSessions) : 0;
+
+      document.getElementById("stat-hours").textContent = `${totalHours.toFixed(1)}h`;
+      document.getElementById("stat-days").textContent = `≈ ${(totalHours / 24).toFixed(1)} full 24-hour days`;
+      document.getElementById("stat-games").textContent = allGames.length;
+      document.getElementById("stat-sessions").textContent = `${totalSessions.toLocaleString()} total launches`;
+      document.getElementById("stat-avg-session").textContent = `${avgSessionOverall} mins`;
+      document.getElementById("stat-graveyard").textContent = `${oneAndDone.length} games`;
+      document.getElementById("stat-graveyard-pct").textContent = `${((oneAndDone.length / (allGames.length || 1)) * 100).toFixed(0)}% of library booted only once`;
+
+      // Compute 8 Quirky Fun Facts
+      if (allGames.length > 0) {
+        // 1. Most Played
+        const mostPlayed = [...allGames].sort((a, b) => b.hours - a.hours)[0];
+        document.getElementById("fact-most-played").textContent = mostPlayed.name;
+        document.getElementById("fact-most-played-sub").textContent = `${mostPlayed.hours}h (${((mostPlayed.hours / totalHours) * 100).toFixed(1)}% of all your gaming)`;
+
+        // 2. Marathon Champion
+        const multiSession = allGames.filter(g => g.playCount >= 3);
+        const bingeChamp = [...(multiSession.length ? multiSession : allGames)].sort((a, b) => b.avgSessionMins - a.avgSessionMins)[0];
+        document.getElementById("fact-binge").textContent = bingeChamp.name;
+        document.getElementById("fact-binge-sub").textContent = `Averaged ${(bingeChamp.avgSessionMins / 60).toFixed(1)} hrs per launch across ${bingeChamp.playCount} boots`;
+
+        // 3. Most Sessions
+        const sessionChamp = [...allGames].sort((a, b) => b.playCount - a.playCount)[0];
+        document.getElementById("fact-sessions").textContent = sessionChamp.name;
+        document.getElementById("fact-sessions-sub").textContent = `Booted up ${sessionChamp.playCount} separate times (${sessionChamp.hours}h total)`;
+
+        // 4. Slowest Burn (Most hours per trophy unlocked, min 1 trophy & 3 hours)
+        const slowBurnCandidates = allGames.filter(g => g.trophiesEarned >= 1 && g.hours >= 3);
+        if (slowBurnCandidates.length) {
+          const slowBurn = [...slowBurnCandidates].sort((a, b) => (b.hours / b.trophiesEarned) - (a.hours / a.trophiesEarned))[0];
+          const hrsPerTrophy = (slowBurn.hours / slowBurn.trophiesEarned).toFixed(1);
+          document.getElementById("fact-slow-burn").textContent = slowBurn.name;
+          document.getElementById("fact-slow-burn-sub").textContent = `${hrsPerTrophy} hours of grinding for each trophy (${slowBurn.trophiesEarned} earned)`;
+        }
+
+        // 5. Trophy Pinata (Most trophies per hour, min 5 trophies & 0.5h)
+        const pinataCandidates = allGames.filter(g => g.trophiesEarned >= 5 && g.hours >= 0.5);
+        if (pinataCandidates.length) {
+          const pinata = [...pinataCandidates].sort((a, b) => (b.trophiesEarned / b.hours) - (a.trophiesEarned / a.hours))[0];
+          const trophiesPerHr = (pinata.trophiesEarned / pinata.hours).toFixed(1);
+          document.getElementById("fact-pinata").textContent = pinata.name;
+          document.getElementById("fact-pinata-sub").textContent = `${trophiesPerHr} trophies per hour (${pinata.trophiesEarned} in ${pinata.hours}h)`;
+        }
+
+        // 6. Longest Relationship (Days between firstPlayed and lastPlayed)
+        const withSpan = allGames.map(g => {
+          const days = Math.round((new Date(g.lastPlayed) - new Date(g.firstPlayed)) / (1000 * 60 * 60 * 24));
+          return { ...g, spanDays: days };
+        }).sort((a, b) => b.spanDays - a.spanDays);
+        if (withSpan[0] && withSpan[0].spanDays > 0) {
+          document.getElementById("fact-span").textContent = withSpan[0].name;
+          document.getElementById("fact-span-sub").textContent = `${withSpan[0].spanDays.toLocaleString()} days between first & most recent boot`;
+        } else {
+          document.getElementById("fact-span").textContent = "All Recent";
+          document.getElementById("fact-span-sub").textContent = "Keep playing to build multi-year spans!";
+        }
+
+        // 7. Fastest Nope (1 session, shortest non-zero playtime)
+        const fastestNope = [...oneAndDone].filter(g => g.avgSessionMins > 0).sort((a, b) => a.avgSessionMins - b.avgSessionMins)[0];
+        if (fastestNope) {
+          document.getElementById("fact-nope").textContent = fastestNope.name;
+          document.getElementById("fact-nope-sub").textContent = `Played once for ${fastestNope.avgSessionMins} mins on ${new Date(fastestNope.firstPlayed).toLocaleDateString("en-GB")}`;
+        }
+
+        // 8. Average Completion Rate
+        const gamesWithTrophies = allGames.filter(g => g.trophyProgressVal >= 0);
+        const avgComp = gamesWithTrophies.length
+          ? (gamesWithTrophies.reduce((s, g) => s + g.trophyProgressVal, 0) / gamesWithTrophies.length).toFixed(1)
+          : 0;
+        const over50 = gamesWithTrophies.filter(g => g.trophyProgressVal >= 50).length;
+        document.getElementById("fact-completion").textContent = `${avgComp}% Average`;
+        document.getElementById("fact-completion-sub").textContent = `${over50} of ${gamesWithTrophies.length} trophy titles at 50%+ progress`;
+      }
+
+      buildCharts();
+      renderGames();
+    }
+
+    function buildCharts() {
+      Chart.defaults.color = "#94a3b8";
+      Chart.defaults.font.family = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
+
+      // 1. Top 10 Games Horizontal Bar
+      const top10 = [...allGames].sort((a, b) => b.hours - a.hours).slice(0, 10);
+      if (charts.topGames) charts.topGames.destroy();
+      charts.topGames = new Chart(document.getElementById("chart-top-games"), {
+        type: "bar",
+        data: {
+          labels: top10.map(g => g.name.length > 24 ? g.name.slice(0, 24) + "…" : g.name),
+          datasets: [{
+            label: "Hours Played",
+            data: top10.map(g => g.hours),
+            backgroundColor: "rgba(59, 130, 246, 0.75)",
+            borderColor: "#60a5fa",
+            borderWidth: 1,
+            borderRadius: 6,
+          }]
+        },
+        options: {
+          indexAxis: "y",
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { grid: { color: "rgba(255,255,255,0.05)" } },
+            y: { grid: { display: false } }
+          }
+        }
+      });
+
+      // 2. Completion Bracket Doughnut
+      const brackets = { "0% (Untouched)": 0, "1–24% (Dabbled)": 0, "25–74% (Solid Run)": 0, "75–100% (Mastered)": 0 };
+      allGames.forEach(g => {
+        const p = g.trophyProgressVal;
+        if (p === 0) brackets["0% (Untouched)"]++;
+        else if (p > 0 && p < 25) brackets["1–24% (Dabbled)"]++;
+        else if (p >= 25 && p < 75) brackets["25–74% (Solid Run)"]++;
+        else if (p >= 75) brackets["75–100% (Mastered)"]++;
+      });
+
+      if (charts.completion) charts.completion.destroy();
+      charts.completion = new Chart(document.getElementById("chart-completion"), {
+        type: "doughnut",
+        data: {
+          labels: Object.keys(brackets),
+          datasets: [{
+            data: Object.values(brackets),
+            backgroundColor: ["#ef4444", "#f59e0b", "#3b82f6", "#10b981"],
+            borderWidth: 0
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { position: "bottom", labels: { boxWidth: 12, padding: 10 } } }
+        }
+      });
+
+      // 3. Playtime by Year First Played
+      const yearMap = {};
+      allGames.forEach(g => {
+        if (!g.firstPlayed) return;
+        const yr = new Date(g.firstPlayed).getFullYear();
+        yearMap[yr] = (yearMap[yr] || 0) + (g.hours || 0);
+      });
+      const sortedYears = Object.keys(yearMap).sort();
+
+      if (charts.yearly) charts.yearly.destroy();
+      charts.yearly = new Chart(document.getElementById("chart-yearly"), {
+        type: "bar",
+        data: {
+          labels: sortedYears,
+          datasets: [{
+            label: "Hours Played",
+            data: sortedYears.map(y => +yearMap[y].toFixed(1)),
+            backgroundColor: "rgba(139, 92, 246, 0.75)",
+            borderRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            y: { grid: { color: "rgba(255,255,255,0.05)" } },
+            x: { grid: { display: false } }
+          }
+        }
+      });
+
+      // 4. Platform Hours Breakdown
+      const platMap = {};
+      allGames.forEach(g => {
+        const p = g.platform || "OTHER";
+        platMap[p] = (platMap[p] || 0) + (g.hours || 0);
+      });
+
+      if (charts.platform) charts.platform.destroy();
+      charts.platform = new Chart(document.getElementById("chart-platform"), {
+        type: "doughnut",
+        data: {
+          labels: Object.keys(platMap),
+          datasets: [{
+            data: Object.values(platMap).map(v => +v.toFixed(1)),
+            backgroundColor: ["#3b82f6", "#6366f1", "#14b8a6", "#f43f5e"],
+            borderWidth: 0
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { position: "bottom", labels: { boxWidth: 12 } } }
+        }
+      });
+    }
+
+    function renderGames() {
+      const search = document.getElementById("search-input").value.toLowerCase();
+      const platform = document.getElementById("platform-filter").value;
+      const sortBy = document.getElementById("sort-select").value;
+
+      let filtered = allGames.filter(g => {
+        const matchesSearch = g.name.toLowerCase().includes(search);
+        const matchesPlat = platform === "ALL" || g.platform.includes(platform);
+        return matchesSearch && matchesPlat;
+      });
+
+      filtered.sort((a, b) => {
+        if (sortBy === "hours") return b.hours - a.hours;
+        if (sortBy === "recent") return new Date(b.lastPlayed) - new Date(a.lastPlayed);
+        if (sortBy === "sessions") return b.playCount - a.playCount;
+        if (sortBy === "binge") return b.avgSessionMins - a.avgSessionMins;
+        if (sortBy === "progress") return b.trophyProgressVal - a.trophyProgressVal;
+        return 0;
+      });
+
+      const grid = document.getElementById("games-grid");
+      grid.innerHTML = filtered.map((game) => {
+        const progressNum = game.trophyProgressVal >= 0 ? game.trophyProgressVal : 0;
+        const hasTrophies = game.trophyProgress !== "N/A";
+        const lastPlayedStr = new Date(game.lastPlayed).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+        const encodedGame = encodeURIComponent(JSON.stringify({
+          name: game.name,
+          imageUrl: game.imageUrl,
+          platform: game.platform,
+          readableTime: game.readableTime,
+          trophyProgress: game.trophyProgress,
+          trophiesEarned: game.trophiesEarned,
+          npCommunicationId: game.npCommunicationId,
+          trophyPlatform: game.trophyPlatform || game.platform
+        }));
+
+        return `
+          <div onclick="openTrophyModal('${encodedGame}')" class="ps-card ps-card-interactive rounded-2xl overflow-hidden flex flex-col justify-between">
+            <div>
+              <div class="relative h-48 bg-slate-900 overflow-hidden">
+                <img src="${game.imageUrl}" alt="${game.name}" class="w-full h-full object-cover" loading="lazy" />
+                <span class="absolute top-3 left-3 px-2.5 py-1 rounded-md text-xs font-bold bg-slate-950/80 backdrop-blur-md text-white border border-white/10">
+                  ${game.platform}
+                </span>
+                ${game.hasPlatinum ? `<span class="absolute top-3 right-3 px-2.5 py-1 rounded-md text-xs font-bold bg-indigo-600 text-white shadow">🏆 PLATINUM</span>` : ""}
+              </div>
+
+              <div class="p-4">
+                <h3 class="font-bold text-base leading-snug line-clamp-1" title="${game.name}">${game.name}</h3>
+                <p class="text-xs text-slate-400 mt-0.5">Last played ${lastPlayedStr}</p>
+
+                <div class="grid grid-cols-3 gap-2 mt-4 bg-slate-900/70 p-2.5 rounded-xl text-center border border-slate-800/80">
+                  <div>
+                    <div class="text-[10px] text-slate-400 uppercase">Playtime</div>
+                    <div class="font-bold text-sm text-blue-400">${game.readableTime}</div>
+                  </div>
+                  <div>
+                    <div class="text-[10px] text-slate-400 uppercase">Sessions</div>
+                    <div class="font-bold text-sm text-white">${game.playCount}</div>
+                  </div>
+                  <div>
+                    <div class="text-[10px] text-slate-400 uppercase">Avg Boot</div>
+                    <div class="font-bold text-sm text-emerald-400">${game.avgSessionMins}m</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="px-4 pb-4">
+              <div class="flex justify-between text-xs mb-1">
+                <span class="text-slate-400">Trophies (${game.trophiesEarned})</span>
+                <span class="font-semibold text-slate-200">${game.trophyProgress}</span>
+              </div>
+              <div class="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
+                <div class="h-full bg-gradient-to-r from-blue-500 to-indigo-400 rounded-full" style="width: ${hasTrophies ? progressNum : 0}%"></div>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    // Live Sync Handler
+    async function triggerLiveSync() {
+      const btn = document.getElementById("sync-btn");
+      const icon = document.getElementById("sync-icon");
+      const text = document.getElementById("sync-text");
+
+      btn.disabled = true;
+      icon.classList.add("animate-spin");
+      text.textContent = "Syncing with Sony...";
+
+      try {
+        const res = await fetch("/api/sync", { method: "POST" });
+        const data = await res.json();
+        if (data.error) throw new Error(data.error);
+        populateDashboard(data);
+        text.textContent = "Synced!";
+        setTimeout(() => { text.textContent = "Sync Live PSN Data"; }, 2500);
+      } catch (err) {
+        alert("Sync Error: " + err.message);
+        text.textContent = "Sync Failed";
+      } finally {
+        btn.disabled = false;
+        icon.classList.remove("animate-spin");
+      }
+    }
+
+    // Trophy Modal Handlers
+    async function openTrophyModal(encodedGame) {
+      const game = JSON.parse(decodeURIComponent(encodedGame));
+      const modal = document.getElementById("trophy-modal");
+      const listEl = document.getElementById("modal-trophy-list");
+
+      document.getElementById("modal-game-img").src = game.imageUrl;
+      document.getElementById("modal-game-title").textContent = game.name;
+      document.getElementById("modal-game-plat").textContent = game.platform;
+      document.getElementById("modal-game-hours").textContent = `${game.readableTime} played`;
+      document.getElementById("modal-game-sub").textContent = `Trophy Progress: ${game.trophyProgress} (${game.trophiesEarned} unlocked)`;
+      document.getElementById("modal-trophy-count").textContent = "Fetching live from PSN...";
+
+      modal.classList.remove("hidden");
+      modal.classList.add("flex");
+
+      if (!game.npCommunicationId) {
+        listEl.innerHTML = `<div class="text-center py-12 text-slate-400 text-sm">No trophy list linked to this title (or run 'Sync Live PSN Data' once to link communication IDs).</div>`;
+        document.getElementById("modal-trophy-count").textContent = "0 trophies";
+        return;
+      }
+
+      listEl.innerHTML = `<div class="text-center py-12 text-blue-400 text-sm animate-pulse">Loading individual trophies & timestamps from PlayStation Network...</div>`;
+
+      try {
+        const res = await fetch(`/api/game-trophies/${game.npCommunicationId}?platform=${encodeURIComponent(game.trophyPlatform || game.platform)}`);
+        const data = await res.json();
+        if (data.error) throw new Error(data.error);
+
+        currentModalTrophies = data.trophies || [];
+        setModalFilter("ALL");
+      } catch (err) {
+        listEl.innerHTML = `<div class="text-center py-12 text-rose-400 text-sm">${err.message}</div>`;
+      }
+    }
+
+    function setModalFilter(filter) {
+      currentModalFilter = filter;
+      ["ALL", "EARNED", "LOCKED"].forEach(f => {
+        const btn = document.getElementById(`mf-${f.toLowerCase()}`);
+        btn.className = f === filter
+          ? "px-3 py-1 rounded-md bg-blue-600 font-semibold text-white"
+          : "px-3 py-1 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-300";
+      });
+      renderModalTrophies();
+    }
+
+    function renderModalTrophies() {
+      const listEl = document.getElementById("modal-trophy-list");
+      let filtered = currentModalTrophies;
+      if (currentModalFilter === "EARNED") filtered = currentModalTrophies.filter(t => t.earned);
+      if (currentModalFilter === "LOCKED") filtered = currentModalTrophies.filter(t => !t.earned);
+
+      const earnedCount = currentModalTrophies.filter(t => t.earned).length;
+      document.getElementById("modal-trophy-count").textContent = `${earnedCount} / ${currentModalTrophies.length} Unlocked`;
+
+      const badgeMap = {
+        platinum: { icon: "🏆", color: "text-indigo-300 border-indigo-500/40 bg-indigo-950/50" },
+        gold: { icon: "🥇", color: "text-amber-300 border-amber-500/40 bg-amber-950/50" },
+        silver: { icon: "🥈", color: "text-slate-200 border-slate-500/40 bg-slate-800/60" },
+        bronze: { icon: "🥉", color: "text-amber-600 border-amber-700/40 bg-amber-950/30" }
+      };
+
+      listEl.innerHTML = filtered.map(t => {
+        const b = badgeMap[t.type] || badgeMap.bronze;
+        const unlockedDate = t.earnedDateTime
+          ? new Date(t.earnedDateTime).toLocaleString("en-GB", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })
+          : null;
+
+        return `
+          <div class="flex items-center justify-between gap-4 p-3 rounded-xl border ${t.earned ? "bg-slate-800/70 border-slate-700" : "bg-slate-900/40 border-slate-800/60 opacity-60"}">
+            <div class="flex items-center gap-3.5 min-w-0">
+              <img src="${t.iconUrl}" alt="${t.name}" class="w-12 h-12 rounded-lg object-cover shrink-0 ${t.earned ? "" : "grayscale"}" loading="lazy" />
+              <div class="min-w-0">
+                <div class="flex items-center gap-2 flex-wrap">
+                  <span class="px-2 py-0.5 text-[10px] font-bold uppercase rounded border ${b.color}">${b.icon} ${t.type}</span>
+                  ${t.hidden ? `<span class="px-1.5 py-0.5 text-[10px] bg-slate-800 text-slate-400 rounded">🕵️ Hidden</span>` : ""}
+                  ${t.earnRate ? `<span class="text-[11px] text-slate-400">Global Rarity: ${t.earnRate}%</span>` : ""}
+                </div>
+                <h4 class="font-bold text-sm text-white truncate mt-1">${t.name}</h4>
+                <p class="text-xs text-slate-400 line-clamp-2">${t.detail || "Hidden trophy description"}</p>
+              </div>
+            </div>
+            <div class="text-right shrink-0">
+              ${t.earned
+                ? `<span class="inline-block px-2.5 py-1 rounded-md text-xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">✓ Unlocked</span>
+                   <div class="text-[11px] text-slate-400 mt-1">${unlockedDate}</div>`
+                : `<span class="inline-block px-2.5 py-1 rounded-md text-xs font-semibold bg-slate-800 text-slate-400">Locked</span>`
+              }
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function closeTrophyModal() {
+      const modal = document.getElementById("trophy-modal");
+      modal.classList.add("hidden");
+      modal.classList.remove("flex");
+    }
+
+    window.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") closeTrophyModal();
+    });
+
+    document.getElementById("search-input").addEventListener("input", renderGames);
+    document.getElementById("platform-filter").addEventListener("change", renderGames);
+    document.getElementById("sort-select").addEventListener("change", renderGames);
+
+    loadDashboard();
+  </script>
+</body>
+</html>
