@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>PSN Telemetry & Wrapped Dashboard</title>
+  <title>PSN Telemetry & Financial ROI Dashboard</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
@@ -24,6 +24,17 @@
       box-shadow: 0 12px 30px -10px rgba(37, 99, 235, 0.35);
       cursor: pointer;
     }
+    .heatmap-cell {
+      width: 12px;
+      height: 12px;
+      border-radius: 2px;
+      background-color: #1e293b;
+      transition: transform 0.1s;
+    }
+    .heatmap-cell:hover {
+      transform: scale(1.3);
+      border: 1px solid #fff;
+    }
     ::-webkit-scrollbar { width: 8px; }
     ::-webkit-scrollbar-track { background: #090d16; }
     ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
@@ -33,7 +44,7 @@
 <body class="min-h-screen p-4 md:p-8">
   <div class="max-w-7xl mx-auto space-y-8">
     
-    <!-- Header, Sync Button & Trophy Summary -->
+    <!-- Header & Sync Button -->
     <header class="ps-card rounded-2xl p-6 md:p-8 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
       <div>
         <div class="flex flex-wrap items-center gap-3">
@@ -48,8 +59,8 @@
             <span id="sync-text">Sync Live PSN Data</span>
           </button>
         </div>
-        <h1 class="text-3xl md:text-4xl font-extrabold mt-3 tracking-tight">PlayStation Hall of Fame</h1>
-        <p class="text-slate-400 text-sm mt-1">Deep playtime telemetry, quirky habits & trophy inspector</p>
+        <h1 class="text-3xl md:text-4xl font-extrabold mt-3 tracking-tight">PlayStation ROI & Annual Tapestry</h1>
+        <p class="text-slate-400 text-sm mt-1">Financial value tracking, cost-per-hour metrics, and 365-day gaming tapestry</p>
       </div>
 
       <!-- Trophy Counters -->
@@ -79,136 +90,137 @@
       </div>
     </header>
 
-    <!-- Headline Metrics -->
-    <section class="grid grid-cols-2 lg:grid-cols-4 gap-4">
-      <div class="ps-card p-5 rounded-2xl">
-        <div class="text-xs text-slate-400 uppercase font-semibold">Total Playtime</div>
-        <div id="stat-hours" class="text-3xl font-black mt-1 text-white">--</div>
-        <div id="stat-days" class="text-xs text-blue-400 mt-1">-- full 24h days</div>
-      </div>
-      <div class="ps-card p-5 rounded-2xl">
-        <div class="text-xs text-slate-400 uppercase font-semibold">Games Tracked</div>
-        <div id="stat-games" class="text-3xl font-black mt-1 text-white">--</div>
-        <div id="stat-sessions" class="text-xs text-slate-400 mt-1">-- total launches</div>
-      </div>
-      <div class="ps-card p-5 rounded-2xl">
-        <div class="text-xs text-slate-400 uppercase font-semibold">Avg Session Length</div>
-        <div id="stat-avg-session" class="text-3xl font-black mt-1 text-emerald-400">--</div>
-        <div class="text-xs text-slate-400 mt-1">Every time you boot a game</div>
-      </div>
-      <div class="ps-card p-5 rounded-2xl">
-        <div class="text-xs text-slate-400 uppercase font-semibold">1-Session Graveyard</div>
-        <div id="stat-graveyard" class="text-3xl font-black mt-1 text-rose-400">--</div>
-        <div id="stat-graveyard-pct" class="text-xs text-slate-400 mt-1">Booted once & never touched again</div>
-      </div>
-    </section>
-
-    <!-- Deep Fun Facts Matrix (8 Cards) -->
+    <!-- Financial ROI & Habit Diagnosis Cards -->
     <section>
       <div class="flex items-center justify-between mb-3">
-        <h2 class="text-lg font-bold tracking-tight text-slate-200">✨ Quirky Telemetry & Fun Facts</h2>
-        <span class="text-xs text-slate-400">Automatically calculated from your play history</span>
+        <h2 class="text-lg font-bold tracking-tight text-slate-200">💰 Financial ROI & Portfolio Health</h2>
+        <span class="text-xs text-slate-400">Click any game card to log price, rating, and notes</span>
       </div>
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div class="ps-card p-4 rounded-2xl border-l-4 border-l-blue-500">
-          <div class="text-[11px] text-blue-400 font-bold uppercase">👑 Ultimate Time-Sink</div>
-          <div id="fact-most-played" class="text-base font-bold mt-1 truncate">--</div>
-          <div id="fact-most-played-sub" class="text-xs text-slate-400 mt-1">--</div>
+        <div class="ps-card p-5 rounded-2xl border-l-4 border-l-emerald-500">
+          <div class="text-[11px] text-emerald-400 font-bold uppercase">💵 Overall Portfolio Spend</div>
+          <div id="roi-spend" class="text-lg font-extrabold mt-1 text-white">--</div>
+          <div id="roi-spend-sub" class="text-xs text-slate-400 mt-1">Logged purchase total</div>
         </div>
-        <div class="ps-card p-4 rounded-2xl border-l-4 border-l-purple-500">
-          <div class="text-[11px] text-purple-400 font-bold uppercase">⚡ Marathon Champion</div>
-          <div id="fact-binge" class="text-base font-bold mt-1 truncate">--</div>
-          <div id="fact-binge-sub" class="text-xs text-slate-400 mt-1">--</div>
+        <div class="ps-card p-5 rounded-2xl border-l-4 border-l-blue-500">
+          <div class="text-[11px] text-blue-400 font-bold uppercase">🏷️ Average Cost-per-Hour</div>
+          <div id="roi-cph" class="text-lg font-extrabold mt-1 text-white">--</div>
+          <div id="roi-cph-sub" class="text-xs text-slate-400 mt-1">Across priced games</div>
         </div>
-        <div class="ps-card p-4 rounded-2xl border-l-4 border-l-emerald-500">
-          <div class="text-[11px] text-emerald-400 font-bold uppercase">🔄 Most Loyal Boot-Up</div>
-          <div id="fact-sessions" class="text-base font-bold mt-1 truncate">--</div>
-          <div id="fact-sessions-sub" class="text-xs text-slate-400 mt-1">--</div>
+        <div class="ps-card p-5 rounded-2xl border-l-4 border-l-purple-500">
+          <div class="text-[11px] text-purple-400 font-bold uppercase">💎 Best Value Investment</div>
+          <div id="roi-best" class="text-lg font-extrabold mt-1 truncate text-white">--</div>
+          <div id="roi-best-sub" class="text-xs text-slate-400 mt-1">Lowest cost per hour</div>
         </div>
-        <div class="ps-card p-4 rounded-2xl border-l-4 border-l-amber-500">
-          <div class="text-[11px] text-amber-400 font-bold uppercase">🐢 Slowest Burn Award</div>
-          <div id="fact-slow-burn" class="text-base font-bold mt-1 truncate">--</div>
-          <div id="fact-slow-burn-sub" class="text-xs text-slate-400 mt-1">--</div>
-        </div>
-        <div class="ps-card p-4 rounded-2xl border-l-4 border-l-pink-500">
-          <div class="text-[11px] text-pink-400 font-bold uppercase">🍬 Trophy Piñata</div>
-          <div id="fact-pinata" class="text-base font-bold mt-1 truncate">--</div>
-          <div id="fact-pinata-sub" class="text-xs text-slate-400 mt-1">--</div>
-        </div>
-        <div class="ps-card p-4 rounded-2xl border-l-4 border-l-cyan-500">
-          <div class="text-[11px] text-cyan-400 font-bold uppercase">⏳ Longest Relationship</div>
-          <div id="fact-span" class="text-base font-bold mt-1 truncate">--</div>
-          <div id="fact-span-sub" class="text-xs text-slate-400 mt-1">--</div>
-        </div>
-        <div class="ps-card p-4 rounded-2xl border-l-4 border-l-rose-500">
-          <div class="text-[11px] text-rose-400 font-bold uppercase">🚪 Fastest "Nope"</div>
-          <div id="fact-nope" class="text-base font-bold mt-1 truncate">--</div>
-          <div id="fact-nope-sub" class="text-xs text-slate-400 mt-1">--</div>
-        </div>
-        <div class="ps-card p-4 rounded-2xl border-l-4 border-l-indigo-500">
-          <div class="text-[11px] text-indigo-400 font-bold uppercase">🎯 Avg Trophy Completion</div>
-          <div id="fact-completion" class="text-base font-bold mt-1 truncate">--</div>
-          <div id="fact-completion-sub" class="text-xs text-slate-400 mt-1">--</div>
+        <div class="ps-card p-5 rounded-2xl border-l-4 border-l-amber-500">
+          <div class="text-[11px] text-amber-400 font-bold uppercase">🕒 Peak Gaming Window</div>
+          <div id="habit-clock" class="text-lg font-extrabold mt-1 truncate text-white">--</div>
+          <div id="habit-clock-sub" class="text-xs text-slate-400 mt-1">Activity rhythm</div>
         </div>
       </div>
     </section>
 
-    <!-- Visual Charts Section -->
-    <section>
-      <div class="flex items-center justify-between mb-3">
-        <h2 class="text-lg font-bold tracking-tight text-slate-200">📊 Visual Habits & Analytics</h2>
+    <!-- GitHub-Style 52-Week Contribution Heatmap & Time of Day -->
+    <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div class="ps-card p-6 rounded-2xl lg:col-span-2 flex flex-col justify-between">
+        <div>
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+            <div>
+              <h3 class="text-base font-bold text-white">🗺️ 52-Week Activity Tapestry</h3>
+              <p class="text-xs text-slate-400">Every box is a day of the year. Darker green = more hours/trophies.</p>
+            </div>
+            <div class="flex items-center gap-1.5 text-[10px] text-slate-400">
+              <span>Less</span>
+              <div class="heatmap-cell" style="background-color: #1e293b;"></div>
+              <div class="heatmap-cell" style="background-color: #065f46;"></div>
+              <div class="heatmap-cell" style="background-color: #059669;"></div>
+              <div class="heatmap-cell" style="background-color: #10b981;"></div>
+              <span>More</span>
+            </div>
+          </div>
+          <div id="heatmap-container" class="overflow-x-auto py-2 flex gap-1 justify-start"></div>
+        </div>
+        <div class="mt-4 pt-3 border-t border-slate-800 flex justify-between items-center text-xs text-slate-400">
+          <span id="heatmap-streak">🔥 Active Streak: -- days</span>
+          <span>Hover any square for date & activity details</span>
+        </div>
       </div>
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <div class="ps-card p-5 rounded-2xl lg:col-span-2">
-          <h3 class="text-xs font-bold uppercase text-slate-400 mb-3">Top 10 Time-Sinks (Hours Played)</h3>
-          <div class="h-64">
-            <canvas id="chart-top-games"></canvas>
-          </div>
-        </div>
-        <div class="ps-card p-5 rounded-2xl">
-          <h3 class="text-xs font-bold uppercase text-slate-400 mb-3">Trophy Completion Brackets</h3>
-          <div class="h-64 flex items-center justify-center">
-            <canvas id="chart-completion"></canvas>
-          </div>
-        </div>
-        <div class="ps-card p-5 rounded-2xl lg:col-span-2">
-          <h3 class="text-xs font-bold uppercase text-slate-400 mb-3">Playtime by Year Game Was Started</h3>
-          <div class="h-56">
-            <canvas id="chart-yearly"></canvas>
-          </div>
-        </div>
-        <div class="ps-card p-5 rounded-2xl">
-          <h3 class="text-xs font-bold uppercase text-slate-400 mb-3">Hours by Platform</h3>
-          <div class="h-56 flex items-center justify-center">
-            <canvas id="chart-platform"></canvas>
+
+      <!-- Time of Day Rhythm -->
+      <div class="ps-card p-6 rounded-2xl flex flex-col justify-between">
+        <div>
+          <h3 class="text-base font-bold text-white">🌙 Time-of-Day Rhythm</h3>
+          <p class="text-xs text-slate-400 mb-4">When you're most active based on recent timestamps</p>
+          <div class="h-52 flex items-center justify-center">
+            <canvas id="chart-hourly-rhythm"></canvas>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- Filter & Search Controls -->
-    <section class="flex flex-col sm:flex-row gap-4 items-center justify-between bg-slate-900/70 p-4 rounded-xl border border-slate-800">
-      <div class="flex items-center gap-3 w-full sm:w-auto">
-        <input 
-          id="search-input" 
-          type="text" 
-          placeholder="Search your games..." 
-          class="w-full sm:w-72 px-4 py-2 rounded-lg bg-slate-800 border border-slate-700 text-sm focus:outline-none focus:border-blue-500"
-        />
-        <span class="text-xs text-slate-400 hidden md:inline">💡 Click any game card to inspect its trophies</span>
+    <!-- Active Rotation Breakdown & Lifetime Records -->
+    <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div class="ps-card p-6 rounded-2xl lg:col-span-2 flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <h3 class="text-base font-bold text-white">⚡ Active Rotation Breakdown (Last 7 Games)</h3>
+              <p class="text-xs text-slate-400">Comparing playtime, session length, and trophy completion</p>
+            </div>
+          </div>
+          <div id="rotation-bars" class="space-y-3.5"></div>
+        </div>
       </div>
-      <div class="flex items-center gap-3 w-full sm:w-auto">
-        <select id="platform-filter" class="px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-sm">
+
+      <div class="ps-card p-6 rounded-2xl space-y-4 flex flex-col justify-between">
+        <div>
+          <h3 class="text-base font-bold text-white mb-1">🏆 Lifetime Records & Quirks</h3>
+          <p class="text-xs text-slate-400 mb-4">All-time extremes across <span id="total-hours-inline">--</span> total hours</p>
+          
+          <div class="space-y-3">
+            <div class="bg-slate-900/70 p-3.5 rounded-xl border border-slate-800">
+              <div class="text-[10px] text-blue-400 font-bold uppercase">👑 All-Time #1 Time-Sink</div>
+              <div id="rec-most-played" class="font-bold text-sm text-white mt-0.5 truncate">--</div>
+              <div id="rec-most-played-sub" class="text-xs text-slate-400">--</div>
+            </div>
+
+            <div class="bg-slate-900/70 p-3.5 rounded-xl border border-slate-800">
+              <div class="text-[10px] text-purple-400 font-bold uppercase">🛋️ Biggest Binge (Longest Avg Boot)</div>
+              <div id="rec-binge" class="font-bold text-sm text-white mt-0.5 truncate">--</div>
+              <div id="rec-binge-sub" class="text-xs text-slate-400">--</div>
+            </div>
+
+            <div class="bg-slate-900/70 p-3.5 rounded-xl border border-slate-800">
+              <div class="text-[10px] text-amber-400 font-bold uppercase">🐢 Slowest Trophy Grind</div>
+              <div id="rec-slow" class="font-bold text-sm text-white mt-0.5 truncate">--</div>
+              <div id="rec-slow-sub" class="text-xs text-slate-400">--</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Filters & Search Controls -->
+    <section class="flex flex-col lg:flex-row gap-4 items-center justify-between bg-slate-900/70 p-4 rounded-xl border border-slate-800">
+      <div class="flex flex-wrap items-center gap-2 w-full lg:w-auto">
+        <button onclick="setTimeWindow('ALL')" id="tw-ALL" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-blue-600 text-white transition">All Games</button>
+        <button onclick="setTimeWindow('30D')" id="tw-30D" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-300 transition">Last 30 Days</button>
+        <button onclick="setTimeWindow('UNFINISHED')" id="tw-UNFINISHED" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-300 transition">Close to 100% (40%+)</button>
+        <button onclick="setTimeWindow('GRAVEYARD')" id="tw-GRAVEYARD" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-300 transition">1-Boot Graveyard</button>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-3 w-full lg:w-auto justify-end">
+        <input id="search-input" type="text" placeholder="Search titles..." class="w-full sm:w-56 px-3.5 py-1.5 rounded-lg bg-slate-800 border border-slate-700 text-sm focus:outline-none focus:border-blue-500" />
+        <select id="platform-filter" class="px-3 py-1.5 rounded-lg bg-slate-800 border border-slate-700 text-sm">
           <option value="ALL">All Platforms</option>
           <option value="PS5">PS5 Only</option>
           <option value="PS4">PS4 Only</option>
         </select>
-        <select id="sort-select" class="px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-sm">
-          <option value="hours">Most Hours Played</option>
-          <option value="recent">Recently Played</option>
-          <option value="sessions">Most Sessions</option>
-          <option value="binge">Longest Avg Session</option>
-          <option value="progress">Trophy Progress %</option>
+        <select id="sort-select" class="px-3 py-1.5 rounded-lg bg-slate-800 border border-slate-700 text-sm font-semibold text-blue-400">
+          <option value="recent" selected>Sort: Recently Played</option>
+          <option value="hours">Sort: Most Hours Played</option>
+          <option value="sessions">Sort: Most Sessions</option>
+          <option value="progress">Sort: Trophy Progress %</option>
         </select>
       </div>
     </section>
@@ -218,7 +230,7 @@
 
   </div>
 
-  <!-- Individual Game Trophy Modal -->
+  <!-- Individual Game Trophy & Info Modal -->
   <div id="trophy-modal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-50 hidden items-center justify-center p-4">
     <div class="ps-card bg-slate-900 rounded-2xl max-w-4xl w-full max-h-[88vh] flex flex-col overflow-hidden border border-slate-700 shadow-2xl">
       
@@ -232,7 +244,11 @@
               <span id="modal-game-hours" class="text-xs text-slate-400"></span>
             </div>
             <h2 id="modal-game-title" class="text-xl font-extrabold truncate mt-0.5">Game Title</h2>
-            <p id="modal-game-sub" class="text-xs text-slate-400"></p>
+            <div class="flex items-center gap-3 mt-1.5">
+              <label class="text-xs text-slate-400">Price ($):</label>
+              <input id="modal-price-input" type="number" step="0.01" class="w-24 px-2 py-0.5 rounded bg-slate-800 border border-slate-700 text-xs text-white font-bold" placeholder="0.00" onchange="saveGameMeta()" />
+              <span id="modal-cph-display" class="text-xs text-emerald-400 font-semibold"></span>
+            </div>
           </div>
         </div>
         <button onclick="closeTrophyModal()" class="p-2 rounded-lg bg-slate-800 hover:bg-rose-600 text-slate-300 hover:text-white transition text-sm font-bold px-3">
@@ -240,54 +256,75 @@
         </button>
       </div>
 
-      <!-- Modal Filter Bar -->
-      <div class="px-5 py-3 bg-slate-900/90 border-b border-slate-800 flex items-center justify-between text-xs">
+      <!-- Modal Tabs & Filter Bar -->
+      <div class="px-5 py-3 bg-slate-900/90 border-b border-slate-800 flex flex-wrap items-center justify-between gap-3 text-xs">
         <div class="flex gap-2">
-          <button onclick="setModalFilter('ALL')" id="mf-all" class="px-3 py-1 rounded-md bg-blue-600 font-semibold">All Trophies</button>
-          <button onclick="setModalFilter('EARNED')" id="mf-earned" class="px-3 py-1 rounded-md bg-slate-800 hover:bg-slate-700">Unlocked Only</button>
-          <button onclick="setModalFilter('LOCKED')" id="mf-locked" class="px-3 py-1 rounded-md bg-slate-800 hover:bg-slate-700">Locked Only</button>
+          <button onclick="switchModalTab('TROPHIES')" id="tab-btn-trophies" class="px-3 py-1 rounded-md bg-blue-600 font-semibold text-white">🏆 Trophies</button>
+          <button onclick="switchModalTab('INFO')" id="tab-btn-info" class="px-3 py-1 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-300">📝 Notes & Rating</button>
+        </div>
+        <div id="trophy-filter-group" class="flex gap-1.5">
+          <button onclick="setModalFilter('ALL')" id="mf-all" class="px-2.5 py-1 rounded bg-blue-600 text-white font-semibold">All</button>
+          <button onclick="setModalFilter('EARNED')" id="mf-earned" class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300">Unlocked</button>
+          <button onclick="setModalFilter('LOCKED')" id="mf-locked" class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300">Locked</button>
         </div>
         <span id="modal-trophy-count" class="text-slate-400 font-semibold"></span>
       </div>
 
-      <!-- Modal Trophy List Body -->
-      <div id="modal-trophy-list" class="p-5 overflow-y-auto space-y-2.5 flex-1"></div>
+      <!-- Modal Body (Shared container for Trophies AND Info/Notes) -->
+      <div id="modal-body-container" class="p-5 overflow-y-auto space-y-2.5 flex-1"></div>
     </div>
   </div>
 
   <script>
     let allGames = [];
+    let rawDashboardData = {};
+    let activeTimeWindow = "ALL";
+    let activeModalGame = null;
+    let currentModalTab = "TROPHIES";
     let currentModalTrophies = [];
     let currentModalFilter = "ALL";
-    let charts = {};
+    let hourlyChartInstance = null;
 
     async function loadDashboard() {
       const res = await fetch("/api/psn-data");
       const data = await res.json();
-
       if (data.error) {
         document.getElementById("last-updated").textContent = data.error;
         return;
       }
-
       populateDashboard(data);
     }
 
+    function formatRelativeDays(dateStr) {
+      const diffMs = Date.now() - new Date(dateStr).getTime();
+      const days = Math.max(0, Math.floor(diffMs / (1000 * 60 * 60 * 24)));
+      if (days === 0) return "Today";
+      if (days === 1) return "Yesterday";
+      if (days < 30) return `${days}d ago`;
+      const months = Math.floor(days / 30);
+      if (months < 12) return `${months}mo ago`;
+      return new Date(dateStr).toLocaleDateString("en-GB", { month: "short", year: "numeric" });
+    }
+
     function populateDashboard(data) {
+      rawDashboardData = data;
+      const gameMeta = data.gameMeta || {};
+
       allGames = (data.mergedGames || []).map(g => {
-        // Ensure backwards compatibility with earlier psn_full_data.json files
         const rawT = g.rawTrophyData;
+        const meta = gameMeta[g.titleId] || {};
         return {
           ...g,
           npCommunicationId: g.npCommunicationId || (rawT ? rawT.npCommunicationId : null),
           trophyPlatform: g.trophyPlatform || (rawT ? rawT.trophyTitlePlatform : g.platform),
           trophyProgressVal: g.trophyProgressVal !== undefined ? g.trophyProgressVal : (parseInt(g.trophyProgress) || -1),
+          price: meta.price || 0,
+          rating: meta.rating || 0,
+          notes: meta.notes || "",
         };
       });
 
       const summary = data.trophySummary;
-
-      // Header
       document.getElementById("last-updated").textContent = `Synced ${new Date(data.fetchedAt).toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "short" })}`;
       document.getElementById("trophy-level").textContent = `${summary.trophyLevel} (${summary.progress}%)`;
       document.getElementById("t-plat").textContent = summary.earnedTrophies.platinum;
@@ -295,224 +332,206 @@
       document.getElementById("t-silver").textContent = summary.earnedTrophies.silver;
       document.getElementById("t-bronze").textContent = summary.earnedTrophies.bronze;
 
-      // Headline Stats
       const totalHours = allGames.reduce((acc, g) => acc + (g.hours || 0), 0);
-      const totalSessions = allGames.reduce((acc, g) => acc + (g.playCount || 0), 0);
-      const oneAndDone = allGames.filter(g => g.playCount === 1);
-      const avgSessionOverall = totalSessions > 0 ? Math.round((totalHours * 60) / totalSessions) : 0;
+      document.getElementById("total-hours-inline").textContent = `${totalHours.toFixed(1)}`;
 
-      document.getElementById("stat-hours").textContent = `${totalHours.toFixed(1)}h`;
-      document.getElementById("stat-days").textContent = `≈ ${(totalHours / 24).toFixed(1)} full 24-hour days`;
-      document.getElementById("stat-games").textContent = allGames.length;
-      document.getElementById("stat-sessions").textContent = `${totalSessions.toLocaleString()} total launches`;
-      document.getElementById("stat-avg-session").textContent = `${avgSessionOverall} mins`;
-      document.getElementById("stat-graveyard").textContent = `${oneAndDone.length} games`;
-      document.getElementById("stat-graveyard-pct").textContent = `${((oneAndDone.length / (allGames.length || 1)) * 100).toFixed(0)}% of library booted only once`;
-
-      // Compute 8 Quirky Fun Facts
-      if (allGames.length > 0) {
-        // 1. Most Played
-        const mostPlayed = [...allGames].sort((a, b) => b.hours - a.hours)[0];
-        document.getElementById("fact-most-played").textContent = mostPlayed.name;
-        document.getElementById("fact-most-played-sub").textContent = `${mostPlayed.hours}h (${((mostPlayed.hours / totalHours) * 100).toFixed(1)}% of all your gaming)`;
-
-        // 2. Marathon Champion
-        const multiSession = allGames.filter(g => g.playCount >= 3);
-        const bingeChamp = [...(multiSession.length ? multiSession : allGames)].sort((a, b) => b.avgSessionMins - a.avgSessionMins)[0];
-        document.getElementById("fact-binge").textContent = bingeChamp.name;
-        document.getElementById("fact-binge-sub").textContent = `Averaged ${(bingeChamp.avgSessionMins / 60).toFixed(1)} hrs per launch across ${bingeChamp.playCount} boots`;
-
-        // 3. Most Sessions
-        const sessionChamp = [...allGames].sort((a, b) => b.playCount - a.playCount)[0];
-        document.getElementById("fact-sessions").textContent = sessionChamp.name;
-        document.getElementById("fact-sessions-sub").textContent = `Booted up ${sessionChamp.playCount} separate times (${sessionChamp.hours}h total)`;
-
-        // 4. Slowest Burn (Most hours per trophy unlocked, min 1 trophy & 3 hours)
-        const slowBurnCandidates = allGames.filter(g => g.trophiesEarned >= 1 && g.hours >= 3);
-        if (slowBurnCandidates.length) {
-          const slowBurn = [...slowBurnCandidates].sort((a, b) => (b.hours / b.trophiesEarned) - (a.hours / a.trophiesEarned))[0];
-          const hrsPerTrophy = (slowBurn.hours / slowBurn.trophiesEarned).toFixed(1);
-          document.getElementById("fact-slow-burn").textContent = slowBurn.name;
-          document.getElementById("fact-slow-burn-sub").textContent = `${hrsPerTrophy} hours of grinding for each trophy (${slowBurn.trophiesEarned} earned)`;
+      // Calculate Financial Portfolio Metrics
+      let totalSpend = 0;
+      let totalPricedHours = 0;
+      let pricedGames = [];
+      allGames.forEach(g => {
+        if (g.price > 0) {
+          totalSpend += g.price;
+          totalPricedHours += g.hours;
+          pricedGames.push({ ...g, cph: g.hours > 0 ? g.price / g.hours : g.price });
         }
+      });
 
-        // 5. Trophy Pinata (Most trophies per hour, min 5 trophies & 0.5h)
-        const pinataCandidates = allGames.filter(g => g.trophiesEarned >= 5 && g.hours >= 0.5);
-        if (pinataCandidates.length) {
-          const pinata = [...pinataCandidates].sort((a, b) => (b.trophiesEarned / b.hours) - (a.trophiesEarned / a.hours))[0];
-          const trophiesPerHr = (pinata.trophiesEarned / pinata.hours).toFixed(1);
-          document.getElementById("fact-pinata").textContent = pinata.name;
-          document.getElementById("fact-pinata-sub").textContent = `${trophiesPerHr} trophies per hour (${pinata.trophiesEarned} in ${pinata.hours}h)`;
-        }
+      const avgCPH = totalPricedHours > 0 ? totalSpend / totalPricedHours : 0;
+      document.getElementById("roi-spend").textContent = `$${totalSpend.toFixed(2)}`;
+      document.getElementById("roi-spend-sub").textContent = `${pricedGames.length} games with logged prices`;
+      document.getElementById("roi-cph").textContent = `$${avgCPH.toFixed(2)} / hr`;
+      document.getElementById("roi-cph-sub").textContent = `Across ${totalPricedHours.toFixed(1)} tracked hours`;
 
-        // 6. Longest Relationship (Days between firstPlayed and lastPlayed)
-        const withSpan = allGames.map(g => {
-          const days = Math.round((new Date(g.lastPlayed) - new Date(g.firstPlayed)) / (1000 * 60 * 60 * 24));
-          return { ...g, spanDays: days };
-        }).sort((a, b) => b.spanDays - a.spanDays);
-        if (withSpan[0] && withSpan[0].spanDays > 0) {
-          document.getElementById("fact-span").textContent = withSpan[0].name;
-          document.getElementById("fact-span-sub").textContent = `${withSpan[0].spanDays.toLocaleString()} days between first & most recent boot`;
-        } else {
-          document.getElementById("fact-span").textContent = "All Recent";
-          document.getElementById("fact-span-sub").textContent = "Keep playing to build multi-year spans!";
-        }
-
-        // 7. Fastest Nope (1 session, shortest non-zero playtime)
-        const fastestNope = [...oneAndDone].filter(g => g.avgSessionMins > 0).sort((a, b) => a.avgSessionMins - b.avgSessionMins)[0];
-        if (fastestNope) {
-          document.getElementById("fact-nope").textContent = fastestNope.name;
-          document.getElementById("fact-nope-sub").textContent = `Played once for ${fastestNope.avgSessionMins} mins on ${new Date(fastestNope.firstPlayed).toLocaleDateString("en-GB")}`;
-        }
-
-        // 8. Average Completion Rate
-        const gamesWithTrophies = allGames.filter(g => g.trophyProgressVal >= 0);
-        const avgComp = gamesWithTrophies.length
-          ? (gamesWithTrophies.reduce((s, g) => s + g.trophyProgressVal, 0) / gamesWithTrophies.length).toFixed(1)
-          : 0;
-        const over50 = gamesWithTrophies.filter(g => g.trophyProgressVal >= 50).length;
-        document.getElementById("fact-completion").textContent = `${avgComp}% Average`;
-        document.getElementById("fact-completion-sub").textContent = `${over50} of ${gamesWithTrophies.length} trophy titles at 50%+ progress`;
+      if (pricedGames.length > 0) {
+        pricedGames.sort((a, b) => a.cph - b.cph);
+        const best = pricedGames[0];
+        document.getElementById("roi-best").textContent = best.name;
+        document.getElementById("roi-best-sub").textContent = `$${best.cph.toFixed(2)}/hr ($${best.price} for ${best.hours}h)`;
+      } else {
+        document.getElementById("roi-best").textContent = "Log a Price";
+        document.getElementById("roi-best-sub").textContent = "Click any game card to add prices";
       }
 
-      buildCharts();
+      renderHeatmap();
+      renderHourlyRhythmChart();
+
+      const recentSorted = [...allGames].sort((a, b) => new Date(b.lastPlayed) - new Date(a.lastPlayed));
+      const last7 = recentSorted.slice(0, 7);
+      const maxRecentHours = Math.max(...last7.map(g => g.hours), 1);
+      const rotationContainer = document.getElementById("rotation-bars");
+
+      rotationContainer.innerHTML = last7.map(g => {
+        const widthPct = Math.max(6, Math.round((g.hours / maxRecentHours) * 100));
+        const progVal = g.trophyProgressVal >= 0 ? g.trophyProgressVal : 0;
+        return `
+          <div class="bg-slate-900/60 p-3 rounded-xl border border-slate-800/80">
+            <div class="flex items-center justify-between text-xs mb-1.5">
+              <div class="flex items-center gap-2.5 min-w-0">
+                <img src="${g.imageUrl}" class="w-8 h-8 rounded-md object-cover shrink-0" />
+                <div class="truncate">
+                  <span class="font-bold text-slate-100">${g.name}</span>
+                  <span class="text-slate-500 ml-1.5">• ${formatRelativeDays(g.lastPlayed)}</span>
+                </div>
+              </div>
+              <div class="flex items-center gap-3 shrink-0">
+                <span class="px-2 py-0.5 rounded bg-slate-800 text-slate-300 font-medium">${g.avgSessionMins}m / boot</span>
+                <span class="px-2 py-0.5 rounded bg-indigo-950/80 text-indigo-300 border border-indigo-500/30 font-semibold">🏆 ${progVal}%</span>
+                <span class="font-extrabold text-blue-400 w-14 text-right">${g.readableTime}</span>
+              </div>
+            </div>
+            <div class="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
+              <div class="h-full bg-gradient-to-r from-blue-600 to-cyan-400 rounded-full" style="width: ${widthPct}%"></div>
+            </div>
+          </div>
+        `;
+      }).join("");
+
+      if (allGames.length > 0) {
+        const mostPlayed = [...allGames].sort((a, b) => b.hours - a.hours)[0];
+        document.getElementById("rec-most-played").textContent = mostPlayed.name;
+        document.getElementById("rec-most-played-sub").textContent = `${mostPlayed.hours}h (${((mostPlayed.hours / (totalHours || 1)) * 100).toFixed(1)}% of all playtime)`;
+
+        const multiBoot = allGames.filter(g => g.playCount >= 3);
+        const binge = [...(multiBoot.length ? multiBoot : allGames)].sort((a, b) => b.avgSessionMins - a.avgSessionMins)[0];
+        document.getElementById("rec-binge").textContent = binge.name;
+        document.getElementById("rec-binge-sub").textContent = `Averaged ${(binge.avgSessionMins / 60).toFixed(1)}h every single time you launched it`;
+
+        const slowCandidates = allGames.filter(g => g.trophiesEarned >= 1 && g.hours >= 2);
+        if (slowCandidates.length) {
+          const slow = [...slowCandidates].sort((a, b) => (b.hours / b.trophiesEarned) - (a.hours / a.trophiesEarned))[0];
+          document.getElementById("rec-slow").textContent = slow.name;
+          document.getElementById("rec-slow-sub").textContent = `${(slow.hours / slow.trophiesEarned).toFixed(1)} hours per trophy (${slow.trophiesEarned} unlocked)`;
+        }
+      }
+
       renderGames();
     }
 
-    function buildCharts() {
-      Chart.defaults.color = "#94a3b8";
-      Chart.defaults.font.family = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
+    function renderHeatmap() {
+      const container = document.getElementById("heatmap-container");
+      container.innerHTML = "";
 
-      // 1. Top 10 Games Horizontal Bar
-      const top10 = [...allGames].sort((a, b) => b.hours - a.hours).slice(0, 10);
-      if (charts.topGames) charts.topGames.destroy();
-      charts.topGames = new Chart(document.getElementById("chart-top-games"), {
-        type: "bar",
-        data: {
-          labels: top10.map(g => g.name.length > 24 ? g.name.slice(0, 24) + "…" : g.name),
-          datasets: [{
-            label: "Hours Played",
-            data: top10.map(g => g.hours),
-            backgroundColor: "rgba(59, 130, 246, 0.75)",
-            borderColor: "#60a5fa",
-            borderWidth: 1,
-            borderRadius: 6,
-          }]
-        },
-        options: {
-          indexAxis: "y",
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: { legend: { display: false } },
-          scales: {
-            x: { grid: { color: "rgba(255,255,255,0.05)" } },
-            y: { grid: { display: false } }
-          }
-        }
-      });
-
-      // 2. Completion Bracket Doughnut
-      const brackets = { "0% (Untouched)": 0, "1–24% (Dabbled)": 0, "25–74% (Solid Run)": 0, "75–100% (Mastered)": 0 };
+      const daysMap = {};
       allGames.forEach(g => {
-        const p = g.trophyProgressVal;
-        if (p === 0) brackets["0% (Untouched)"]++;
-        else if (p > 0 && p < 25) brackets["1–24% (Dabbled)"]++;
-        else if (p >= 25 && p < 75) brackets["25–74% (Solid Run)"]++;
-        else if (p >= 75) brackets["75–100% (Mastered)"]++;
+        if (!g.lastPlayed) return;
+        const key = new Date(g.lastPlayed).toISOString().slice(0, 10);
+        daysMap[key] = (daysMap[key] || 0) + (g.hours || 1);
       });
 
-      if (charts.completion) charts.completion.destroy();
-      charts.completion = new Chart(document.getElementById("chart-completion"), {
+      const today = new Date();
+      let activeDaysCount = 0;
+
+      for (let w = 51; w >= 0; w--) {
+        const col = document.createElement("div");
+        col.className = "flex flex-col gap-1";
+        for (let d = 0; d < 7; d++) {
+          const dateObj = new Date(today);
+          dateObj.setDate(today.getDate() - (w * 7 + (6 - d)));
+          const key = dateObj.toISOString().slice(0, 10);
+          const score = daysMap[key] || 0;
+
+          const cell = document.createElement("div");
+          cell.className = "heatmap-cell";
+          
+          if (score > 10) cell.style.backgroundColor = "#10b981";
+          else if (score > 4) cell.style.backgroundColor = "#059669";
+          else if (score > 0) cell.style.backgroundColor = "#065f46";
+
+          if (score > 0) activeDaysCount++;
+
+          cell.title = `${dateObj.toLocaleDateString("en-GB", { dateStyle: "medium" })}: ${score > 0 ? score.toFixed(1) + 'h activity' : 'No recorded play'}`;
+          col.appendChild(cell);
+        }
+        container.appendChild(col);
+      }
+
+      document.getElementById("heatmap-streak").textContent = `🔥 Active Days Tapestry: ${activeDaysCount} active periods mapped`;
+    }
+
+    function renderHourlyRhythmChart() {
+      const buckets = { "Morning": 0, "Afternoon": 0, "Evening": 0, "Late Night": 0 };
+      const timestamps = [
+        ...allGames.map(g => g.lastPlayed),
+        ...((rawDashboardData.recentTrophyEvents || []).map(t => t.timestamp))
+      ].filter(Boolean);
+
+      timestamps.forEach(ts => {
+        const hr = new Date(ts).getHours();
+        if (hr >= 6 && hr < 12) buckets["Morning"]++;
+        else if (hr >= 12 && hr < 18) buckets["Afternoon"]++;
+        else if (hr >= 18 && hr < 23) buckets["Evening"]++;
+        else buckets["Late Night"]++;
+      });
+
+      const topWindow = Object.entries(buckets).sort((a, b) => b[1] - a[1])[0];
+      if (topWindow && topWindow[1] > 0) {
+        document.getElementById("habit-clock").textContent = topWindow[0] + " Gamer";
+        document.getElementById("habit-clock-sub").textContent = `Peak timestamp concentration`;
+      }
+
+      if (hourlyChartInstance) hourlyChartInstance.destroy();
+      hourlyChartInstance = new Chart(document.getElementById("chart-hourly-rhythm"), {
         type: "doughnut",
         data: {
-          labels: Object.keys(brackets),
+          labels: Object.keys(buckets),
           datasets: [{
-            data: Object.values(brackets),
-            backgroundColor: ["#ef4444", "#f59e0b", "#3b82f6", "#10b981"],
+            data: Object.values(buckets),
+            backgroundColor: ["#38bdf8", "#fbbf24", "#6366f1", "#a855f7"],
             borderWidth: 0
           }]
         },
         options: {
           responsive: true,
           maintainAspectRatio: false,
-          plugins: { legend: { position: "bottom", labels: { boxWidth: 12, padding: 10 } } }
+          plugins: { legend: { position: "bottom", labels: { boxWidth: 10, padding: 8, font: { size: 10 } } } }
         }
       });
+    }
 
-      // 3. Playtime by Year First Played
-      const yearMap = {};
-      allGames.forEach(g => {
-        if (!g.firstPlayed) return;
-        const yr = new Date(g.firstPlayed).getFullYear();
-        yearMap[yr] = (yearMap[yr] || 0) + (g.hours || 0);
+    function setTimeWindow(windowCode) {
+      activeTimeWindow = windowCode;
+      ["ALL", "30D", "UNFINISHED", "GRAVEYARD"].forEach(code => {
+        const btn = document.getElementById(`tw-${code}`);
+        if (btn) btn.className = code === windowCode
+          ? "px-3 py-1.5 rounded-lg text-xs font-bold bg-blue-600 text-white transition"
+          : "px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-300 transition";
       });
-      const sortedYears = Object.keys(yearMap).sort();
-
-      if (charts.yearly) charts.yearly.destroy();
-      charts.yearly = new Chart(document.getElementById("chart-yearly"), {
-        type: "bar",
-        data: {
-          labels: sortedYears,
-          datasets: [{
-            label: "Hours Played",
-            data: sortedYears.map(y => +yearMap[y].toFixed(1)),
-            backgroundColor: "rgba(139, 92, 246, 0.75)",
-            borderRadius: 6
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: { legend: { display: false } },
-          scales: {
-            y: { grid: { color: "rgba(255,255,255,0.05)" } },
-            x: { grid: { display: false } }
-          }
-        }
-      });
-
-      // 4. Platform Hours Breakdown
-      const platMap = {};
-      allGames.forEach(g => {
-        const p = g.platform || "OTHER";
-        platMap[p] = (platMap[p] || 0) + (g.hours || 0);
-      });
-
-      if (charts.platform) charts.platform.destroy();
-      charts.platform = new Chart(document.getElementById("chart-platform"), {
-        type: "doughnut",
-        data: {
-          labels: Object.keys(platMap),
-          datasets: [{
-            data: Object.values(platMap).map(v => +v.toFixed(1)),
-            backgroundColor: ["#3b82f6", "#6366f1", "#14b8a6", "#f43f5e"],
-            borderWidth: 0
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: { legend: { position: "bottom", labels: { boxWidth: 12 } } }
-        }
-      });
+      renderGames();
     }
 
     function renderGames() {
       const search = document.getElementById("search-input").value.toLowerCase();
       const platform = document.getElementById("platform-filter").value;
       const sortBy = document.getElementById("sort-select").value;
+      const now = Date.now();
 
       let filtered = allGames.filter(g => {
         const matchesSearch = g.name.toLowerCase().includes(search);
         const matchesPlat = platform === "ALL" || g.platform.includes(platform);
-        return matchesSearch && matchesPlat;
+        if (!matchesSearch || !matchesPlat) return false;
+
+        const daysSinceLast = (now - new Date(g.lastPlayed).getTime()) / (1000 * 60 * 60 * 24);
+        if (activeTimeWindow === "30D") return daysSinceLast <= 30;
+        if (activeTimeWindow === "UNFINISHED") return g.trophyProgressVal >= 40 && g.trophyProgressVal < 100;
+        if (activeTimeWindow === "GRAVEYARD") return g.playCount === 1;
+        return true;
       });
 
       filtered.sort((a, b) => {
-        if (sortBy === "hours") return b.hours - a.hours;
         if (sortBy === "recent") return new Date(b.lastPlayed) - new Date(a.lastPlayed);
+        if (sortBy === "hours") return b.hours - a.hours;
         if (sortBy === "sessions") return b.playCount - a.playCount;
-        if (sortBy === "binge") return b.avgSessionMins - a.avgSessionMins;
         if (sortBy === "progress") return b.trophyProgressVal - a.trophyProgressVal;
         return 0;
       });
@@ -522,15 +541,26 @@
         const progressNum = game.trophyProgressVal >= 0 ? game.trophyProgressVal : 0;
         const hasTrophies = game.trophyProgress !== "N/A";
         const lastPlayedStr = new Date(game.lastPlayed).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+        const relativeStr = formatRelativeDays(game.lastPlayed);
+        const cphStr = game.price > 0 && game.hours > 0 ? `$${(game.price / game.hours).toFixed(2)}/hr` : (game.price > 0 ? `$${game.price} paid` : "Add Price");
+        const starsStr = game.rating > 0 ? "★".repeat(game.rating) : "";
+
         const encodedGame = encodeURIComponent(JSON.stringify({
+          titleId: game.titleId,
           name: game.name,
           imageUrl: game.imageUrl,
           platform: game.platform,
           readableTime: game.readableTime,
+          playCount: game.playCount,
+          avgSessionMins: game.avgSessionMins,
           trophyProgress: game.trophyProgress,
           trophiesEarned: game.trophiesEarned,
           npCommunicationId: game.npCommunicationId,
-          trophyPlatform: game.trophyPlatform || game.platform
+          trophyPlatform: game.trophyPlatform || game.platform,
+          price: game.price || 0,
+          rating: game.rating || 0,
+          notes: game.notes || "",
+          hours: game.hours || 0
         }));
 
         return `
@@ -541,11 +571,20 @@
                 <span class="absolute top-3 left-3 px-2.5 py-1 rounded-md text-xs font-bold bg-slate-950/80 backdrop-blur-md text-white border border-white/10">
                   ${game.platform}
                 </span>
-                ${game.hasPlatinum ? `<span class="absolute top-3 right-3 px-2.5 py-1 rounded-md text-xs font-bold bg-indigo-600 text-white shadow">🏆 PLATINUM</span>` : ""}
+                <span class="absolute top-3 right-3 px-2 py-1 rounded-md text-[11px] font-bold bg-emerald-600/90 text-white shadow">
+                  ${cphStr}
+                </span>
+                <span class="absolute bottom-3 right-3 px-2.5 py-1 rounded-md text-[11px] font-semibold bg-slate-950/85 backdrop-blur-md text-blue-300 border border-white/10">
+                  ${relativeStr}
+                </span>
+                ${game.hasPlatinum ? `<span class="absolute bottom-3 left-3 px-2.5 py-1 rounded-md text-xs font-bold bg-indigo-600 text-white shadow">🏆 PLATINUM</span>` : ""}
               </div>
 
               <div class="p-4">
-                <h3 class="font-bold text-base leading-snug line-clamp-1" title="${game.name}">${game.name}</h3>
+                <div class="flex items-center justify-between gap-2">
+                  <h3 class="font-bold text-base leading-snug line-clamp-1" title="${game.name}">${game.name}</h3>
+                  ${starsStr ? `<span class="text-xs text-amber-400 shrink-0">${starsStr}</span>` : ""}
+                </div>
                 <p class="text-xs text-slate-400 mt-0.5">Last played ${lastPlayedStr}</p>
 
                 <div class="grid grid-cols-3 gap-2 mt-4 bg-slate-900/70 p-2.5 rounded-xl text-center border border-slate-800/80">
@@ -579,12 +618,10 @@
       }).join("");
     }
 
-    // Live Sync Handler
     async function triggerLiveSync() {
       const btn = document.getElementById("sync-btn");
       const icon = document.getElementById("sync-icon");
       const text = document.getElementById("sync-text");
-
       btn.disabled = true;
       icon.classList.add("animate-spin");
       text.textContent = "Syncing with Sony...";
@@ -605,39 +642,131 @@
       }
     }
 
-    // Trophy Modal Handlers
     async function openTrophyModal(encodedGame) {
       const game = JSON.parse(decodeURIComponent(encodedGame));
-      const modal = document.getElementById("trophy-modal");
-      const listEl = document.getElementById("modal-trophy-list");
+      activeModalGame = game;
+      currentModalTrophies = []; // Reset so fresh trophies load for each clicked game
+      currentModalFilter = "ALL";
 
+      const modal = document.getElementById("trophy-modal");
       document.getElementById("modal-game-img").src = game.imageUrl;
       document.getElementById("modal-game-title").textContent = game.name;
       document.getElementById("modal-game-plat").textContent = game.platform;
-      document.getElementById("modal-game-hours").textContent = `${game.readableTime} played`;
-      document.getElementById("modal-game-sub").textContent = `Trophy Progress: ${game.trophyProgress} (${game.trophiesEarned} unlocked)`;
-      document.getElementById("modal-trophy-count").textContent = "Fetching live from PSN...";
-
+      document.getElementById("modal-game-hours").textContent = `${game.readableTime} played (${game.playCount} boots)`;
+      document.getElementById("modal-price-input").value = game.price > 0 ? game.price : "";
+      
+      updateCPHDisplay(game.price, game.hours);
       modal.classList.remove("hidden");
       modal.classList.add("flex");
 
-      if (!game.npCommunicationId) {
-        listEl.innerHTML = `<div class="text-center py-12 text-slate-400 text-sm">No trophy list linked to this title (or run 'Sync Live PSN Data' once to link communication IDs).</div>`;
-        document.getElementById("modal-trophy-count").textContent = "0 trophies";
-        return;
+      switchModalTab("TROPHIES");
+    }
+
+    function updateCPHDisplay(price, hours) {
+      const cphDisplay = document.getElementById("modal-cph-display");
+      if (price > 0 && hours > 0) {
+        cphDisplay.textContent = `Cost: $${(price / hours).toFixed(2)}/hr`;
+      } else {
+        cphDisplay.textContent = price > 0 ? `$${price} total` : "No price set";
       }
+    }
 
-      listEl.innerHTML = `<div class="text-center py-12 text-blue-400 text-sm animate-pulse">Loading individual trophies & timestamps from PlayStation Network...</div>`;
+    function switchModalTab(tab) {
+      currentModalTab = tab;
+      const filterGroup = document.getElementById("trophy-filter-group");
+      const btnTrophies = document.getElementById("tab-btn-trophies");
+      const btnInfo = document.getElementById("tab-btn-info");
+      const listEl = document.getElementById("modal-body-container");
 
+      if (tab === "TROPHIES") {
+        btnTrophies.className = "px-3 py-1 rounded-md bg-blue-600 font-semibold text-white";
+        btnInfo.className = "px-3 py-1 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-300";
+        filterGroup.style.display = "flex";
+        
+        if (!activeModalGame.npCommunicationId) {
+          listEl.innerHTML = `<div class="text-center py-12 text-slate-400 text-sm">Click <b>🔄 Sync Live PSN Data</b> at the top once to link trophy IDs!</div>`;
+          document.getElementById("modal-trophy-count").textContent = "Sync Needed";
+          return;
+        }
+
+        if (currentModalTrophies.length === 0) {
+          listEl.innerHTML = `<div class="text-center py-12 text-blue-400 text-sm animate-pulse">Loading trophies from PlayStation Network...</div>`;
+          fetchTrophiesForActiveGame();
+        } else {
+          renderModalTrophies();
+        }
+      } else {
+        btnInfo.className = "px-3 py-1 rounded-md bg-blue-600 font-semibold text-white";
+        btnTrophies.className = "px-3 py-1 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-300";
+        filterGroup.style.display = "none";
+        document.getElementById("modal-trophy-count").textContent = "Personal Game Info";
+
+        listEl.innerHTML = `
+          <div class="space-y-5 max-w-2xl mx-auto py-2">
+            <div class="bg-slate-950/60 p-5 rounded-xl border border-slate-800 space-y-4">
+              <h3 class="font-bold text-sm text-slate-200">⭐ Personal Rating & Review</h3>
+              <div class="flex items-center gap-2">
+                ${[1, 2, 3, 4, 5].map(star => `
+                  <button onclick="setRating(${star})" class="text-2xl ${star <= (activeModalGame.rating || 0) ? 'text-amber-400' : 'text-slate-600'} hover:text-amber-300 transition">★</button>
+                `).join('')}
+                <span class="text-xs text-slate-400 ml-2">${activeModalGame.rating ? activeModalGame.rating + '/5 Stars' : 'Unrated'}</span>
+              </div>
+
+              <div>
+                <label class="block text-xs text-slate-400 mb-1 font-semibold uppercase">Personal Notes & Reflections</label>
+                <textarea id="modal-notes-input" rows="4" class="w-full p-3 rounded-lg bg-slate-900 border border-slate-700 text-sm text-white focus:outline-none focus:border-blue-500" placeholder="Write your review, memorable moments, or backlog thoughts here...">${activeModalGame.notes || ''}</textarea>
+              </div>
+
+              <div class="flex items-center justify-between">
+                <span id="notes-save-status" class="text-xs text-emerald-400 font-semibold"></span>
+                <button onclick="saveGameMeta(true)" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-lg transition">
+                  Save Notes & Rating
+                </button>
+              </div>
+            </div>
+
+            <div class="bg-slate-950/60 p-5 rounded-xl border border-slate-800 space-y-2 text-xs text-slate-300">
+              <div class="font-bold text-slate-200 mb-2">📊 Telemetry Summary for ${activeModalGame.name}</div>
+              <div class="flex justify-between py-1 border-b border-slate-800">
+                <span class="text-slate-400">Platform:</span>
+                <span class="font-semibold text-white">${activeModalGame.platform}</span>
+              </div>
+              <div class="flex justify-between py-1 border-b border-slate-800">
+                <span class="text-slate-400">Total Playtime:</span>
+                <span class="font-semibold text-blue-400">${activeModalGame.readableTime}</span>
+              </div>
+              <div class="flex justify-between py-1 border-b border-slate-800">
+                <span class="text-slate-400">Total Boot Launches:</span>
+                <span class="font-semibold text-white">${activeModalGame.playCount} sessions</span>
+              </div>
+              <div class="flex justify-between py-1 border-b border-slate-800">
+                <span class="text-slate-400">Average Session Length:</span>
+                <span class="font-semibold text-emerald-400">${activeModalGame.avgSessionMins} minutes</span>
+              </div>
+              <div class="flex justify-between py-1">
+                <span class="text-slate-400">Trophy Progress:</span>
+                <span class="font-semibold text-indigo-300">${activeModalGame.trophyProgress} (${activeModalGame.trophiesEarned} earned)</span>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+    }
+
+    async function fetchTrophiesForActiveGame() {
+      const listEl = document.getElementById("modal-body-container");
       try {
-        const res = await fetch(`/api/game-trophies/${game.npCommunicationId}?platform=${encodeURIComponent(game.trophyPlatform || game.platform)}`);
+        const res = await fetch(`/api/game-trophies/${activeModalGame.npCommunicationId}?platform=${encodeURIComponent(activeModalGame.trophyPlatform || activeModalGame.platform)}`);
         const data = await res.json();
         if (data.error) throw new Error(data.error);
-
         currentModalTrophies = data.trophies || [];
-        setModalFilter("ALL");
+        if (currentModalTab === "TROPHIES") {
+          setModalFilter(currentModalFilter);
+        }
       } catch (err) {
-        listEl.innerHTML = `<div class="text-center py-12 text-rose-400 text-sm">${err.message}</div>`;
+        if (currentModalTab === "TROPHIES") {
+          listEl.innerHTML = `<div class="text-center py-12 text-rose-400 text-sm">${err.message}</div>`;
+        }
       }
     }
 
@@ -645,15 +774,15 @@
       currentModalFilter = filter;
       ["ALL", "EARNED", "LOCKED"].forEach(f => {
         const btn = document.getElementById(`mf-${f.toLowerCase()}`);
-        btn.className = f === filter
-          ? "px-3 py-1 rounded-md bg-blue-600 font-semibold text-white"
-          : "px-3 py-1 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-300";
+        if (btn) btn.className = f === filter
+          ? "px-2.5 py-1 rounded bg-blue-600 font-semibold text-white"
+          : "px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300";
       });
       renderModalTrophies();
     }
 
     function renderModalTrophies() {
-      const listEl = document.getElementById("modal-trophy-list");
+      const listEl = document.getElementById("modal-body-container");
       let filtered = currentModalTrophies;
       if (currentModalFilter === "EARNED") filtered = currentModalTrophies.filter(t => t.earned);
       if (currentModalFilter === "LOCKED") filtered = currentModalTrophies.filter(t => !t.earned);
@@ -682,7 +811,7 @@
                 <div class="flex items-center gap-2 flex-wrap">
                   <span class="px-2 py-0.5 text-[10px] font-bold uppercase rounded border ${b.color}">${b.icon} ${t.type}</span>
                   ${t.hidden ? `<span class="px-1.5 py-0.5 text-[10px] bg-slate-800 text-slate-400 rounded">🕵️ Hidden</span>` : ""}
-                  ${t.earnRate ? `<span class="text-[11px] text-slate-400">Global Rarity: ${t.earnRate}%</span>` : ""}
+                  ${t.earnRate ? `<span class="text-[11px] text-slate-400">Rarity: ${t.earnRate}%</span>` : ""}
                 </div>
                 <h4 class="font-bold text-sm text-white truncate mt-1">${t.name}</h4>
                 <p class="text-xs text-slate-400 line-clamp-2">${t.detail || "Hidden trophy description"}</p>
@@ -700,10 +829,53 @@
       }).join("");
     }
 
+    function setRating(stars) {
+      activeModalGame.rating = stars;
+      saveGameMeta(true);
+      switchModalTab("INFO");
+    }
+
+    async function saveGameMeta(showFeedback = false) {
+      if (!activeModalGame) return;
+      const priceVal = document.getElementById("modal-price-input").value;
+      const notesEl = document.getElementById("modal-notes-input");
+      const notesVal = notesEl ? notesEl.value : (activeModalGame.notes || "");
+
+      try {
+        const res = await fetch("/api/update-game-meta", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ 
+            titleId: activeModalGame.titleId, 
+            price: priceVal, 
+            rating: activeModalGame.rating || 0,
+            notes: notesVal 
+          })
+        });
+        const data = await res.json();
+        if (data.success) {
+          activeModalGame.price = parseFloat(priceVal) || 0;
+          activeModalGame.notes = notesVal;
+          rawDashboardData.gameMeta = data.gameMeta;
+          updateCPHDisplay(activeModalGame.price, activeModalGame.hours);
+          populateDashboard(rawDashboardData);
+
+          if (showFeedback) {
+            const statusEl = document.getElementById("notes-save-status");
+            if (statusEl) {
+              statusEl.textContent = "✓ Saved!";
+              setTimeout(() => { statusEl.textContent = ""; }, 2000);
+            }
+          }
+        }
+      } catch (err) {
+        console.error("Failed to save metadata", err);
+      }
+    }
+
     function closeTrophyModal() {
-      const modal = document.getElementById("trophy-modal");
-      modal.classList.add("hidden");
-      modal.classList.remove("flex");
+      document.getElementById("trophy-modal").classList.add("hidden");
+      document.getElementById("trophy-modal").classList.remove("flex");
     }
 
     window.addEventListener("keydown", (e) => {
