@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>PSN Telemetry & Financial ROI Dashboard</title>
+  <title>PSN Telemetry, Playtime & ROI Dashboard</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
@@ -59,8 +59,8 @@
             <span id="sync-text">Sync Live PSN Data</span>
           </button>
         </div>
-        <h1 class="text-3xl md:text-4xl font-extrabold mt-3 tracking-tight">PlayStation ROI & Annual Tapestry</h1>
-        <p class="text-slate-400 text-sm mt-1">Financial value tracking, cost-per-hour metrics, and 365-day gaming tapestry</p>
+        <h1 class="text-3xl md:text-4xl font-extrabold mt-3 tracking-tight">PlayStation Playtime & Telemetry Hub</h1>
+        <p class="text-slate-400 text-sm mt-1">Complete playtime analytics, daily pulse, 52-week tapestry & financial ROI</p>
       </div>
 
       <!-- Trophy Counters -->
@@ -90,44 +90,78 @@
       </div>
     </header>
 
-    <!-- Financial ROI & Habit Diagnosis Cards -->
+    <!-- ROW 1: Core Time Played & Habit Headline Stats -->
     <section>
       <div class="flex items-center justify-between mb-3">
-        <h2 class="text-lg font-bold tracking-tight text-slate-200">💰 Financial ROI & Portfolio Health</h2>
-        <span class="text-xs text-slate-400">Click any game card to log price, rating, and notes</span>
+        <h2 class="text-lg font-bold tracking-tight text-slate-200">⏱️ Time Played & Session Telemetry</h2>
+        <span class="text-xs text-slate-400">Lifetime totals vs. recent 30-day momentum</span>
       </div>
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div class="ps-card p-5 rounded-2xl border-l-4 border-l-emerald-500">
-          <div class="text-[11px] text-emerald-400 font-bold uppercase">💵 Overall Portfolio Spend</div>
-          <div id="roi-spend" class="text-lg font-extrabold mt-1 text-white">--</div>
-          <div id="roi-spend-sub" class="text-xs text-slate-400 mt-1">Logged purchase total</div>
-        </div>
         <div class="ps-card p-5 rounded-2xl border-l-4 border-l-blue-500">
-          <div class="text-[11px] text-blue-400 font-bold uppercase">🏷️ Average Cost-per-Hour</div>
-          <div id="roi-cph" class="text-lg font-extrabold mt-1 text-white">--</div>
-          <div id="roi-cph-sub" class="text-xs text-slate-400 mt-1">Across priced games</div>
+          <div class="text-[11px] text-blue-400 font-bold uppercase">🕹️ Total Lifetime Playtime</div>
+          <div id="stat-total-hours" class="text-2xl font-black mt-1 text-white">--</div>
+          <div id="stat-total-days" class="text-xs text-slate-400 mt-1">--</div>
+        </div>
+        <div class="ps-card p-5 rounded-2xl border-l-4 border-l-cyan-500">
+          <div class="text-[11px] text-cyan-400 font-bold uppercase">🔥 Active Rotation (Last 30d)</div>
+          <div id="stat-30d-hours" class="text-2xl font-black mt-1 text-white">--</div>
+          <div id="stat-30d-sub" class="text-xs text-slate-400 mt-1">--</div>
+        </div>
+        <div class="ps-card p-5 rounded-2xl border-l-4 border-l-emerald-500">
+          <div class="text-[11px] text-emerald-400 font-bold uppercase">⚡ Avg Session Stamina</div>
+          <div id="stat-stamina" class="text-2xl font-black mt-1 text-white">--</div>
+          <div id="stat-stamina-sub" class="text-xs text-slate-400 mt-1">--</div>
         </div>
         <div class="ps-card p-5 rounded-2xl border-l-4 border-l-purple-500">
-          <div class="text-[11px] text-purple-400 font-bold uppercase">💎 Best Value Investment</div>
-          <div id="roi-best" class="text-lg font-extrabold mt-1 truncate text-white">--</div>
-          <div id="roi-best-sub" class="text-xs text-slate-400 mt-1">Lowest cost per hour</div>
-        </div>
-        <div class="ps-card p-5 rounded-2xl border-l-4 border-l-amber-500">
-          <div class="text-[11px] text-amber-400 font-bold uppercase">🕒 Peak Gaming Window</div>
-          <div id="habit-clock" class="text-lg font-extrabold mt-1 truncate text-white">--</div>
-          <div id="habit-clock-sub" class="text-xs text-slate-400 mt-1">Activity rhythm</div>
+          <div class="text-[11px] text-purple-400 font-bold uppercase">🧠 Current Gaming Style</div>
+          <div id="stat-archetype" class="text-xl font-extrabold mt-1 truncate text-white">--</div>
+          <div id="stat-archetype-sub" class="text-xs text-slate-400 mt-1">--</div>
         </div>
       </div>
     </section>
 
-    <!-- GitHub-Style 52-Week Contribution Heatmap & Time of Day -->
+    <!-- ROW 2: 30-Day Daily Playtime Bar Chart + Time-of-Day Rhythm -->
     <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div class="ps-card p-6 rounded-2xl lg:col-span-2">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+          <div>
+            <h3 class="text-base font-bold text-white">📅 Daily Playtime Chart (Last 30 Days)</h3>
+            <p id="daily-chart-subtitle" class="text-xs text-slate-400">Daily hours reconstructed from active game windows & logged syncs</p>
+          </div>
+          <div class="flex gap-1.5 bg-slate-900 p-1 rounded-lg border border-slate-800 self-start">
+            <button onclick="setDailyMode('PACE')" id="dm-PACE" class="px-2.5 py-1 rounded text-xs font-bold bg-blue-600 text-white">30-Day Pace</button>
+            <button onclick="setDailyMode('LOGGED')" id="dm-LOGGED" class="px-2.5 py-1 rounded text-xs font-semibold text-slate-400 hover:text-white">Exact Logged Deltas</button>
+          </div>
+        </div>
+        <div class="h-56">
+          <canvas id="chart-daily-playtime"></canvas>
+        </div>
+      </div>
+
+      <!-- Time of Day Rhythm -->
+      <div class="ps-card p-6 rounded-2xl flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between">
+            <h3 class="text-base font-bold text-white">🌙 Time-of-Day Rhythm</h3>
+            <span id="habit-clock" class="text-xs font-bold text-amber-400">--</span>
+          </div>
+          <p id="habit-clock-sub" class="text-xs text-slate-400 mb-3">When you play most based on timestamps</p>
+          <div class="h-52 flex items-center justify-center">
+            <canvas id="chart-hourly-rhythm"></canvas>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ROW 3: 52-Week Activity Heatmap + Financial ROI Cards -->
+    <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- 52-Week GitHub Heatmap -->
       <div class="ps-card p-6 rounded-2xl lg:col-span-2 flex flex-col justify-between">
         <div>
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
             <div>
               <h3 class="text-base font-bold text-white">🗺️ 52-Week Activity Tapestry</h3>
-              <p class="text-xs text-slate-400">Every box is a day of the year. Darker green = more hours/trophies.</p>
+              <p class="text-xs text-slate-400">Every square is a day of the past year. Darker green = heavier playtime.</p>
             </div>
             <div class="flex items-center gap-1.5 text-[10px] text-slate-400">
               <span>Less</span>
@@ -141,31 +175,51 @@
           <div id="heatmap-container" class="overflow-x-auto py-2 flex gap-1 justify-start"></div>
         </div>
         <div class="mt-4 pt-3 border-t border-slate-800 flex justify-between items-center text-xs text-slate-400">
-          <span id="heatmap-streak">🔥 Active Streak: -- days</span>
-          <span>Hover any square for date & activity details</span>
+          <span id="heatmap-streak">🔥 Active Days Tapestry: --</span>
+          <span>Hover any square for date & playtime details</span>
         </div>
       </div>
 
-      <!-- Time of Day Rhythm -->
-      <div class="ps-card p-6 rounded-2xl flex flex-col justify-between">
+      <!-- Financial ROI Summary Column -->
+      <div class="ps-card p-6 rounded-2xl space-y-3 flex flex-col justify-between">
         <div>
-          <h3 class="text-base font-bold text-white">🌙 Time-of-Day Rhythm</h3>
-          <p class="text-xs text-slate-400 mb-4">When you're most active based on recent timestamps</p>
-          <div class="h-52 flex items-center justify-center">
-            <canvas id="chart-hourly-rhythm"></canvas>
+          <div class="flex items-center justify-between mb-1">
+            <h3 class="text-base font-bold text-white">💰 Financial ROI</h3>
+            <span class="text-[11px] text-slate-400">Click any game to log price</span>
+          </div>
+          <div class="space-y-2.5 mt-3">
+            <div class="bg-slate-900/70 p-3 rounded-xl border border-slate-800 flex justify-between items-center">
+              <div>
+                <div class="text-[10px] text-emerald-400 font-bold uppercase">💵 Logged Spend</div>
+                <div id="roi-spend-sub" class="text-[11px] text-slate-400">0 games priced</div>
+              </div>
+              <div id="roi-spend" class="text-lg font-black text-white">$0.00</div>
+            </div>
+            <div class="bg-slate-900/70 p-3 rounded-xl border border-slate-800 flex justify-between items-center">
+              <div>
+                <div class="text-[10px] text-blue-400 font-bold uppercase">🏷️ Avg Cost / Hour</div>
+                <div id="roi-cph-sub" class="text-[11px] text-slate-400">Across priced games</div>
+              </div>
+              <div id="roi-cph" class="text-lg font-black text-blue-400">$0.00/hr</div>
+            </div>
+            <div class="bg-slate-900/70 p-3 rounded-xl border border-slate-800">
+              <div class="text-[10px] text-purple-400 font-bold uppercase">💎 Best Value Game</div>
+              <div id="roi-best" class="text-sm font-bold text-white truncate mt-0.5">--</div>
+              <div id="roi-best-sub" class="text-[11px] text-slate-400">--</div>
+            </div>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- Active Rotation Breakdown & Lifetime Records -->
+    <!-- ROW 4: Active Rotation Breakdown & Lifetime Playtime Records -->
     <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <div class="ps-card p-6 rounded-2xl lg:col-span-2 flex flex-col justify-between">
         <div>
           <div class="flex items-center justify-between mb-4">
             <div>
-              <h3 class="text-base font-bold text-white">⚡ Active Rotation Breakdown (Last 7 Games)</h3>
-              <p class="text-xs text-slate-400">Comparing playtime, session length, and trophy completion</p>
+              <h3 class="text-base font-bold text-white">⚡ Active Rotation Playtime (Last 7 Games)</h3>
+              <p class="text-xs text-slate-400">Comparing total hours invested, average session length, and trophy completion</p>
             </div>
           </div>
           <div id="rotation-bars" class="space-y-3.5"></div>
@@ -174,8 +228,8 @@
 
       <div class="ps-card p-6 rounded-2xl space-y-4 flex flex-col justify-between">
         <div>
-          <h3 class="text-base font-bold text-white mb-1">🏆 Lifetime Records & Quirks</h3>
-          <p class="text-xs text-slate-400 mb-4">All-time extremes across <span id="total-hours-inline">--</span> total hours</p>
+          <h3 class="text-base font-bold text-white mb-1">🏆 All-Time Playtime Records</h3>
+          <p class="text-xs text-slate-400 mb-4">Extremes across your <span id="total-hours-inline">--</span> total hours</p>
           
           <div class="space-y-3">
             <div class="bg-slate-900/70 p-3.5 rounded-xl border border-slate-800">
@@ -185,7 +239,7 @@
             </div>
 
             <div class="bg-slate-900/70 p-3.5 rounded-xl border border-slate-800">
-              <div class="text-[10px] text-purple-400 font-bold uppercase">🛋️ Biggest Binge (Longest Avg Boot)</div>
+              <div class="text-[10px] text-purple-400 font-bold uppercase">🛋️ Biggest Binge (Longest Avg Session)</div>
               <div id="rec-binge" class="font-bold text-sm text-white mt-0.5 truncate">--</div>
               <div id="rec-binge-sub" class="text-xs text-slate-400">--</div>
             </div>
@@ -194,6 +248,12 @@
               <div class="text-[10px] text-amber-400 font-bold uppercase">🐢 Slowest Trophy Grind</div>
               <div id="rec-slow" class="font-bold text-sm text-white mt-0.5 truncate">--</div>
               <div id="rec-slow-sub" class="text-xs text-slate-400">--</div>
+            </div>
+
+            <div class="bg-slate-900/70 p-3.5 rounded-xl border border-slate-800">
+              <div class="text-[10px] text-rose-400 font-bold uppercase">🚪 The 1-Session Graveyard</div>
+              <div id="rec-graveyard" class="font-bold text-sm text-white mt-0.5 truncate">--</div>
+              <div id="rec-graveyard-sub" class="text-xs text-slate-400">--</div>
             </div>
           </div>
         </div>
@@ -220,6 +280,7 @@
           <option value="recent" selected>Sort: Recently Played</option>
           <option value="hours">Sort: Most Hours Played</option>
           <option value="sessions">Sort: Most Sessions</option>
+          <option value="binge">Sort: Longest Avg Session</option>
           <option value="progress">Sort: Trophy Progress %</option>
         </select>
       </div>
@@ -260,7 +321,7 @@
       <div class="px-5 py-3 bg-slate-900/90 border-b border-slate-800 flex flex-wrap items-center justify-between gap-3 text-xs">
         <div class="flex gap-2">
           <button onclick="switchModalTab('TROPHIES')" id="tab-btn-trophies" class="px-3 py-1 rounded-md bg-blue-600 font-semibold text-white">🏆 Trophies</button>
-          <button onclick="switchModalTab('INFO')" id="tab-btn-info" class="px-3 py-1 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-300">📝 Notes & Rating</button>
+          <button onclick="switchModalTab('INFO')" id="tab-btn-info" class="px-3 py-1 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-300">📖 Game Info & Notes</button>
         </div>
         <div id="trophy-filter-group" class="flex gap-1.5">
           <button onclick="setModalFilter('ALL')" id="mf-all" class="px-2.5 py-1 rounded bg-blue-600 text-white font-semibold">All</button>
@@ -270,7 +331,7 @@
         <span id="modal-trophy-count" class="text-slate-400 font-semibold"></span>
       </div>
 
-      <!-- Modal Body (Shared container for Trophies AND Info/Notes) -->
+      <!-- Modal Body -->
       <div id="modal-body-container" class="p-5 overflow-y-auto space-y-2.5 flex-1"></div>
     </div>
   </div>
@@ -279,10 +340,12 @@
     let allGames = [];
     let rawDashboardData = {};
     let activeTimeWindow = "ALL";
+    let dailyChartMode = "PACE";
     let activeModalGame = null;
     let currentModalTab = "TROPHIES";
     let currentModalTrophies = [];
     let currentModalFilter = "ALL";
+    let dailyChartInstance = null;
     let hourlyChartInstance = null;
 
     async function loadDashboard() {
@@ -332,10 +395,50 @@
       document.getElementById("t-silver").textContent = summary.earnedTrophies.silver;
       document.getElementById("t-bronze").textContent = summary.earnedTrophies.bronze;
 
+      // 1. Core Playtime & Stamina Metrics
       const totalHours = allGames.reduce((acc, g) => acc + (g.hours || 0), 0);
-      document.getElementById("total-hours-inline").textContent = `${totalHours.toFixed(1)}`;
+      const totalSessions = allGames.reduce((acc, g) => acc + (g.playCount || 0), 0);
+      const lifetimeAvgMins = totalSessions > 0 ? Math.round((totalHours * 60) / totalSessions) : 0;
 
-      // Calculate Financial Portfolio Metrics
+      document.getElementById("total-hours-inline").textContent = `${totalHours.toFixed(1)}`;
+      document.getElementById("stat-total-hours").textContent = `${totalHours.toFixed(1)} hrs`;
+      document.getElementById("stat-total-days").textContent = `≈ ${(totalHours / 24).toFixed(1)} full days across ${allGames.length} games`;
+
+      const now = Date.now();
+      const gamesLast30d = allGames.filter(g => (now - new Date(g.lastPlayed).getTime()) / (1000 * 60 * 60 * 24) <= 30);
+      const hoursInActiveRotation = gamesLast30d.reduce((s, g) => s + (g.hours || 0), 0);
+      document.getElementById("stat-30d-hours").textContent = `${gamesLast30d.length} Active Titles`;
+      document.getElementById("stat-30d-sub").textContent = `${hoursInActiveRotation.toFixed(1)} cumulative hrs in these games`;
+
+      const recentSorted = [...allGames].sort((a, b) => new Date(b.lastPlayed) - new Date(a.lastPlayed));
+      const last10 = recentSorted.slice(0, 10);
+      if (last10.length > 0) {
+        const last10Hours = last10.reduce((s, g) => s + g.hours, 0);
+        const last10Sessions = last10.reduce((s, g) => s + (g.playCount || 0), 0);
+        const recentAvgMins = last10Sessions > 0 ? Math.round((last10Hours * 60) / last10Sessions) : 0;
+        const diff = recentAvgMins - lifetimeAvgMins;
+
+        document.getElementById("stat-stamina").textContent = `${recentAvgMins}m / boot`;
+        document.getElementById("stat-stamina-sub").textContent = `Lifetime avg: ${lifetimeAvgMins}m (${diff >= 0 ? '+' + diff : diff}m recently)`;
+
+        const topRecentGame = [...last10].sort((a, b) => b.hours - a.hours)[0];
+        const concentration = last10Hours > 0 ? Math.round((topRecentGame.hours / last10Hours) * 100) : 0;
+        const lowProgressCount = last10.filter(g => g.trophyProgressVal >= 0 && g.trophyProgressVal <= 15).length;
+
+        let archetype = "Balanced Explorer";
+        let archetypeSub = `${last10Hours.toFixed(1)}h across your last 10 games`;
+        if (lowProgressCount >= 6) {
+          archetype = "Serial Sampler";
+          archetypeSub = `${lowProgressCount}/10 recent games under 15% trophies`;
+        } else if (concentration >= 55) {
+          archetype = "Deep-Dive Specialist";
+          archetypeSub = `${concentration}% of recent hours in ${topRecentGame.name}`;
+        }
+        document.getElementById("stat-archetype").textContent = archetype;
+        document.getElementById("stat-archetype-sub").textContent = archetypeSub;
+      }
+
+      // 2. Financial Portfolio Metrics
       let totalSpend = 0;
       let totalPricedHours = 0;
       let pricedGames = [];
@@ -349,9 +452,9 @@
 
       const avgCPH = totalPricedHours > 0 ? totalSpend / totalPricedHours : 0;
       document.getElementById("roi-spend").textContent = `$${totalSpend.toFixed(2)}`;
-      document.getElementById("roi-spend-sub").textContent = `${pricedGames.length} games with logged prices`;
-      document.getElementById("roi-cph").textContent = `$${avgCPH.toFixed(2)} / hr`;
-      document.getElementById("roi-cph-sub").textContent = `Across ${totalPricedHours.toFixed(1)} tracked hours`;
+      document.getElementById("roi-spend-sub").textContent = `${pricedGames.length} games priced`;
+      document.getElementById("roi-cph").textContent = `$${avgCPH.toFixed(2)}/hr`;
+      document.getElementById("roi-cph-sub").textContent = `Across ${totalPricedHours.toFixed(1)} priced hours`;
 
       if (pricedGames.length > 0) {
         pricedGames.sort((a, b) => a.cph - b.cph);
@@ -363,10 +466,12 @@
         document.getElementById("roi-best-sub").textContent = "Click any game card to add prices";
       }
 
-      renderHeatmap();
+      // 3. Render Charts & Heatmap
+      renderDailyPlaytimeChart();
       renderHourlyRhythmChart();
+      renderHeatmap();
 
-      const recentSorted = [...allGames].sort((a, b) => new Date(b.lastPlayed) - new Date(a.lastPlayed));
+      // 4. Active Rotation Bars
       const last7 = recentSorted.slice(0, 7);
       const maxRecentHours = Math.max(...last7.map(g => g.hours), 1);
       const rotationContainer = document.getElementById("rotation-bars");
@@ -397,6 +502,7 @@
         `;
       }).join("");
 
+      // 5. All-Time Playtime Records
       if (allGames.length > 0) {
         const mostPlayed = [...allGames].sort((a, b) => b.hours - a.hours)[0];
         document.getElementById("rec-most-played").textContent = mostPlayed.name;
@@ -413,9 +519,128 @@
           document.getElementById("rec-slow").textContent = slow.name;
           document.getElementById("rec-slow-sub").textContent = `${(slow.hours / slow.trophiesEarned).toFixed(1)} hours per trophy (${slow.trophiesEarned} unlocked)`;
         }
+
+        const oneBoot = allGames.filter(g => g.playCount === 1);
+        document.getElementById("rec-graveyard").textContent = `${oneBoot.length} of ${allGames.length} Games (${Math.round((oneBoot.length / allGames.length) * 100)}%)`;
+        document.getElementById("rec-graveyard-sub").textContent = `Booted once and never launched a second time`;
       }
 
       renderGames();
+    }
+
+    function setDailyMode(mode) {
+      dailyChartMode = mode;
+      ["PACE", "LOGGED"].forEach(m => {
+        const btn = document.getElementById(`dm-${m}`);
+        btn.className = m === mode
+          ? "px-2.5 py-1 rounded text-xs font-bold bg-blue-600 text-white"
+          : "px-2.5 py-1 rounded text-xs font-semibold text-slate-400 hover:text-white";
+      });
+      renderDailyPlaytimeChart();
+    }
+
+    function renderDailyPlaytimeChart() {
+      Chart.defaults.color = "#94a3b8";
+      Chart.defaults.font.family = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
+
+      const days = [];
+      const dayKeys = [];
+      const now = new Date();
+      for (let i = 29; i >= 0; i--) {
+        const d = new Date(now);
+        d.setDate(now.getDate() - i);
+        const key = d.toISOString().slice(0, 10);
+        dayKeys.push(key);
+        days.push(d.toLocaleDateString("en-GB", { day: "numeric", month: "short" }));
+      }
+
+      const dailyHours = new Array(30).fill(0);
+      const dailyGameTooltips = Array.from({ length: 30 }, () => []);
+      const loggedDays = rawDashboardData.dailyLog?.days || {};
+
+      if (dailyChartMode === "LOGGED") {
+        document.getElementById("daily-chart-subtitle").textContent =
+          "Exact daily playtime deltas recorded each day you click 'Sync Live PSN Data'";
+        dayKeys.forEach((key, idx) => {
+          if (loggedDays[key]) {
+            dailyHours[idx] = loggedDays[key].totalHours || 0;
+            const gamesObj = loggedDays[key].games || {};
+            dailyGameTooltips[idx] = Object.entries(gamesObj).map(([name, h]) => `${name}: +${h}h`);
+          }
+        });
+      } else {
+        document.getElementById("daily-chart-subtitle").textContent =
+          "Daily hours reconstructed across your active game windows (First Played → Last Played) & logged syncs";
+
+        allGames.forEach(g => {
+          if (!g.firstPlayed || !g.lastPlayed || g.hours <= 0) return;
+          const startKey = new Date(g.firstPlayed).toISOString().slice(0, 10);
+          const endKey = new Date(g.lastPlayed).toISOString().slice(0, 10);
+
+          const startMs = new Date(startKey).getTime();
+          const endMs = new Date(endKey).getTime();
+          const spanDays = Math.max(1, Math.round((endMs - startMs) / (1000 * 60 * 60 * 24)) + 1);
+
+          if (spanDays <= 60) {
+            const hrsPerDay = g.hours / spanDays;
+            dayKeys.forEach((key, idx) => {
+              if (key >= startKey && key <= endKey) {
+                dailyHours[idx] = +(dailyHours[idx] + hrsPerDay).toFixed(2);
+                dailyGameTooltips[idx].push(`${g.name} (~${hrsPerDay.toFixed(1)}h/d)`);
+              }
+            });
+          } else {
+            const lastIdx = dayKeys.indexOf(endKey);
+            if (lastIdx !== -1) {
+              const estSessionHrs = Math.max(0.3, +((g.avgSessionMins || 45) / 60).toFixed(2));
+              dailyHours[lastIdx] = +(dailyHours[lastIdx] + estSessionHrs).toFixed(2);
+              dailyGameTooltips[lastIdx].push(`${g.name} (~${estSessionHrs}h session)`);
+            }
+          }
+        });
+
+        dayKeys.forEach((key, idx) => {
+          if (loggedDays[key] && loggedDays[key].totalHours > 0) {
+            dailyHours[idx] = loggedDays[key].totalHours;
+            dailyGameTooltips[idx] = Object.entries(loggedDays[key].games || {}).map(([n, h]) => `${n}: +${h}h (Logged)`);
+          }
+        });
+      }
+
+      if (dailyChartInstance) dailyChartInstance.destroy();
+      dailyChartInstance = new Chart(document.getElementById("chart-daily-playtime"), {
+        type: "bar",
+        data: {
+          labels: days,
+          datasets: [{
+            label: "Hours Played",
+            data: dailyHours,
+            backgroundColor: dailyHours.map(v => v > 2 ? "rgba(59, 130, 246, 0.85)" : "rgba(56, 189, 248, 0.55)"),
+            borderColor: "#60a5fa",
+            borderWidth: 1,
+            borderRadius: 5,
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                afterBody: (items) => {
+                  const idx = items[0].dataIndex;
+                  return dailyGameTooltips[idx].slice(0, 5);
+                }
+              }
+            }
+          },
+          scales: {
+            y: { beginAtZero: true, grid: { color: "rgba(255,255,255,0.05)" } },
+            x: { grid: { display: false }, ticks: { maxRotation: 45, font: { size: 10 } } }
+          }
+        }
+      });
     }
 
     function renderHeatmap() {
@@ -456,13 +681,14 @@
         container.appendChild(col);
       }
 
-      document.getElementById("heatmap-streak").textContent = `🔥 Active Days Tapestry: ${activeDaysCount} active periods mapped`;
+      document.getElementById("heatmap-streak").textContent = `🔥 Active Days Tapestry: ${activeDaysCount} active dates mapped`;
     }
 
     function renderHourlyRhythmChart() {
       const buckets = { "Morning": 0, "Afternoon": 0, "Evening": 0, "Late Night": 0 };
       const timestamps = [
         ...allGames.map(g => g.lastPlayed),
+        ...allGames.map(g => g.firstPlayed),
         ...((rawDashboardData.recentTrophyEvents || []).map(t => t.timestamp))
       ].filter(Boolean);
 
@@ -477,7 +703,6 @@
       const topWindow = Object.entries(buckets).sort((a, b) => b[1] - a[1])[0];
       if (topWindow && topWindow[1] > 0) {
         document.getElementById("habit-clock").textContent = topWindow[0] + " Gamer";
-        document.getElementById("habit-clock-sub").textContent = `Peak timestamp concentration`;
       }
 
       if (hourlyChartInstance) hourlyChartInstance.destroy();
@@ -532,6 +757,7 @@
         if (sortBy === "recent") return new Date(b.lastPlayed) - new Date(a.lastPlayed);
         if (sortBy === "hours") return b.hours - a.hours;
         if (sortBy === "sessions") return b.playCount - a.playCount;
+        if (sortBy === "binge") return b.avgSessionMins - a.avgSessionMins;
         if (sortBy === "progress") return b.trophyProgressVal - a.trophyProgressVal;
         return 0;
       });
@@ -645,7 +871,7 @@
     async function openTrophyModal(encodedGame) {
       const game = JSON.parse(decodeURIComponent(encodedGame));
       activeModalGame = game;
-      currentModalTrophies = []; // Reset so fresh trophies load for each clicked game
+      currentModalTrophies = [];
       currentModalFilter = "ALL";
 
       const modal = document.getElementById("trophy-modal");
@@ -699,12 +925,19 @@
         btnInfo.className = "px-3 py-1 rounded-md bg-blue-600 font-semibold text-white";
         btnTrophies.className = "px-3 py-1 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-300";
         filterGroup.style.display = "none";
-        document.getElementById("modal-trophy-count").textContent = "Personal Game Info";
+        document.getElementById("modal-trophy-count").textContent = "Game Encyclopedia & Personal Review";
 
         listEl.innerHTML = `
-          <div class="space-y-5 max-w-2xl mx-auto py-2">
+          <div class="space-y-5 max-w-3xl mx-auto py-2">
+            
+            <!-- Live External Game Encyclopedia Card -->
+            <div id="external-game-info" class="bg-slate-950/60 p-5 rounded-xl border border-slate-800">
+              <div class="text-xs text-blue-400 animate-pulse">Fetching synopsis, genres, release date & ratings...</div>
+            </div>
+
+            <!-- Personal Rating & Review Card -->
             <div class="bg-slate-950/60 p-5 rounded-xl border border-slate-800 space-y-4">
-              <h3 class="font-bold text-sm text-slate-200">⭐ Personal Rating & Review</h3>
+              <h3 class="font-bold text-sm text-slate-200">⭐ Your Personal Rating & Review</h3>
               <div class="flex items-center gap-2">
                 ${[1, 2, 3, 4, 5].map(star => `
                   <button onclick="setRating(${star})" class="text-2xl ${star <= (activeModalGame.rating || 0) ? 'text-amber-400' : 'text-slate-600'} hover:text-amber-300 transition">★</button>
@@ -714,7 +947,7 @@
 
               <div>
                 <label class="block text-xs text-slate-400 mb-1 font-semibold uppercase">Personal Notes & Reflections</label>
-                <textarea id="modal-notes-input" rows="4" class="w-full p-3 rounded-lg bg-slate-900 border border-slate-700 text-sm text-white focus:outline-none focus:border-blue-500" placeholder="Write your review, memorable moments, or backlog thoughts here...">${activeModalGame.notes || ''}</textarea>
+                <textarea id="modal-notes-input" rows="3" class="w-full p-3 rounded-lg bg-slate-900 border border-slate-700 text-sm text-white focus:outline-none focus:border-blue-500" placeholder="Write your review, memorable moments, or backlog thoughts here...">${activeModalGame.notes || ''}</textarea>
               </div>
 
               <div class="flex items-center justify-between">
@@ -725,8 +958,9 @@
               </div>
             </div>
 
+            <!-- Telemetry Summary Card -->
             <div class="bg-slate-950/60 p-5 rounded-xl border border-slate-800 space-y-2 text-xs text-slate-300">
-              <div class="font-bold text-slate-200 mb-2">📊 Telemetry Summary for ${activeModalGame.name}</div>
+              <div class="font-bold text-slate-200 mb-2">📊 Your PSN Telemetry for ${activeModalGame.name}</div>
               <div class="flex justify-between py-1 border-b border-slate-800">
                 <span class="text-slate-400">Platform:</span>
                 <span class="font-semibold text-white">${activeModalGame.platform}</span>
@@ -748,8 +982,60 @@
                 <span class="font-semibold text-indigo-300">${activeModalGame.trophyProgress} (${activeModalGame.trophiesEarned} earned)</span>
               </div>
             </div>
+
           </div>
         `;
+
+        fetchExternalGameInfo(activeModalGame.name);
+      }
+    }
+
+    async function fetchExternalGameInfo(gameTitle) {
+      const container = document.getElementById("external-game-info");
+      if (!container) return;
+
+      try {
+        const res = await fetch(`/api/game-info?title=${encodeURIComponent(gameTitle)}`);
+        const info = await res.json();
+
+        const genresHtml = (info.genres || []).length
+          ? info.genres.map(g => `<span class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-blue-950 text-blue-300 border border-blue-700/40">${g}</span>`).join("")
+          : "";
+
+        const metaBadge = info.metacritic
+          ? `<span class="px-2.5 py-1 rounded-md text-xs font-extrabold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">Metacritic: ${info.metacritic}</span>`
+          : "";
+
+        const devLine = [
+          info.developers?.length ? `<b>Developer:</b> ${info.developers.join(", ")}` : null,
+          info.publishers?.length ? `<b>Publisher:</b> ${info.publishers.join(", ")}` : null,
+          info.releaseDate ? `<b>Released:</b> ${info.releaseDate}` : null,
+        ].filter(Boolean).join(" &nbsp;•&nbsp; ");
+
+        const synopsis = info.description || info.shortDescription || "No external synopsis found for this title.";
+
+        const screenshotsHtml = (info.screenshots || []).length
+          ? `<div class="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-3">
+               ${info.screenshots.map(url => `<img src="${url}" class="rounded-lg object-cover h-20 w-full border border-slate-800" loading="lazy" />`).join("")}
+             </div>`
+          : "";
+
+        container.innerHTML = `
+          <div class="space-y-3">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <div class="flex flex-wrap items-center gap-1.5">
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-400 mr-1">📖 About the Game</span>
+                ${genresHtml}
+              </div>
+              ${metaBadge}
+            </div>
+            ${devLine ? `<div class="text-xs text-slate-400">${devLine}</div>` : ""}
+            <p class="text-sm text-slate-200 leading-relaxed">${synopsis}</p>
+            ${screenshotsHtml}
+          </div>
+        `;
+      } catch (err) {
+        container.innerHTML = `<div class="text-xs text-slate-400">Could not load external encyclopedia data for this title.</div>`;
       }
     }
 
@@ -835,7 +1121,7 @@
       switchModalTab("INFO");
     }
 
-    async function saveGameMeta(showFeedback = false) {
+  async function saveGameMeta(showFeedback = false) {
       if (!activeModalGame) return;
       const priceVal = document.getElementById("modal-price-input").value;
       const notesEl = document.getElementById("modal-notes-input");
@@ -846,7 +1132,7 @@
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ 
-            titleId: activeModalGame.titleId, 
+            titleId: String(activeModalGame.titleId), 
             price: priceVal, 
             rating: activeModalGame.rating || 0,
             notes: notesVal 
@@ -857,6 +1143,7 @@
           activeModalGame.price = parseFloat(priceVal) || 0;
           activeModalGame.notes = notesVal;
           rawDashboardData.gameMeta = data.gameMeta;
+          
           updateCPHDisplay(activeModalGame.price, activeModalGame.hours);
           populateDashboard(rawDashboardData);
 

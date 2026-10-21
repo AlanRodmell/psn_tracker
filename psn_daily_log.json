@@ -1,10 +1,10 @@
 {
   "baselineTotals": {
-    "PPSA21704_00": 35626,
-    "PPSA25286_00": 190258,
+    "PPSA21704_00": 38102,
+    "PPSA25286_00": 192304,
     "PPSA10408_00": 24971,
     "PPSA22321_00": 40195,
-    "PPSA04027_00": 80671,
+    "PPSA04027_00": 86838,
     "CUSA05531_00": 164837,
     "PPSA31246_00": 13560,
     "PPSA01316_00": 569002,
@@ -561,7 +561,8 @@
     "CUSA00606_00": 30916,
     "CUSA01472_00": 228,
     "CUSA00016_00": 10956,
-    "CUSA00484_00": 110
+    "CUSA00484_00": 110,
+    "PPSA31872_00": 2381
   },
   "days": {
     "2026-10-19": {
@@ -573,6 +574,14 @@
       "games": {
         "Kingdom Come: Deliverance II": 1.23,
         "Crimson Desert Enhanced": 0
+      }
+    },
+    "2026-10-21": {
+      "totalHours": 2.97,
+      "games": {
+        "Cyberpunk 2077": 1.71,
+        "Kingdom Come: Deliverance II": 0.69,
+        "Crimson Desert Enhanced": 0.57
       }
     }
   }

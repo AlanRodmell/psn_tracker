@@ -2,6 +2,7 @@ require("dotenv").config();
 const express = require("express");
 const fs = require("fs");
 const path = require("path");
+
 const {
   exchangeNpssoForCode,
   exchangeCodeForAccessToken,
@@ -14,7 +15,7 @@ const {
 } = require("psn-api");
 
 const app = express();
-const PORT = 3000;
+const PORT = 3001;
 const DATA_PATH = path.join(__dirname, "psn_full_data.json");
 const DAILY_LOG_PATH = path.join(__dirname, "psn_daily_log.json");
 
@@ -78,7 +79,11 @@ async function fetchAllTrophyTitles(auth) {
     const res = await getUserTitles(auth, "me", { limit, offset });
     if (!res.trophyTitles || res.trophyTitles.length === 0) break;
     allTrophies.push(...res.trophyTitles);
-    if (allTrophies.length >= res.totalItemCount || res.trophyTitles.length < limit) break;
+    if (
+      allTrophies.length >= res.totalItemCount ||
+      res.trophyTitles.length < limit
+    )
+      break;
     offset += limit;
   }
   return allTrophies;
@@ -103,10 +108,18 @@ function updateDailyPlaytimeLog(mergedGames) {
 
   for (const g of mergedGames) {
     const prevSeconds = logData.baselineTotals[g.titleId];
-    if (!isFirstEverRun && prevSeconds !== undefined && g.seconds > prevSeconds) {
+    if (
+      !isFirstEverRun &&
+      prevSeconds !== undefined &&
+      g.seconds > prevSeconds
+    ) {
       const deltaHours = +((g.seconds - prevSeconds) / 3600).toFixed(2);
-      logData.days[todayKey].totalHours = +(logData.days[todayKey].totalHours + deltaHours).toFixed(2);
-      logData.days[todayKey].games[g.name] = +((logData.days[todayKey].games[g.name] || 0) + deltaHours).toFixed(2);
+      logData.days[todayKey].totalHours = +(
+        logData.days[todayKey].totalHours + deltaHours
+      ).toFixed(2);
+      logData.days[todayKey].games[g.name] = +(
+        (logData.days[todayKey].games[g.name] || 0) + deltaHours
+      ).toFixed(2);
     }
     logData.baselineTotals[g.titleId] = g.seconds;
   }
@@ -126,9 +139,17 @@ async function fetchRecentTrophyTimestamps(auth, mergedGames) {
   await Promise.all(
     recentWithTrophies.map(async (g) => {
       try {
-        const isPS5 = (g.trophyPlatform || g.platform || "").toUpperCase().includes("PS5");
+        const isPS5 = (g.trophyPlatform || g.platform || "")
+          .toUpperCase()
+          .includes("PS5");
         const options = isPS5 ? {} : { npServiceName: "trophy" };
-        const res = await getUserTrophiesEarnedForTitle(auth, "me", g.npCommunicationId, "all", options);
+        const res = await getUserTrophiesEarnedForTitle(
+          auth,
+          "me",
+          g.npCommunicationId,
+          "all",
+          options,
+        );
         for (const t of res.trophies || []) {
           if (t.earned && t.earnedDateTime) {
             unlockedEvents.push({
@@ -141,10 +162,12 @@ async function fetchRecentTrophyTimestamps(auth, mergedGames) {
       } catch (e) {
         // Ignore individual title errors
       }
-    })
+    }),
   );
 
-  return unlockedEvents.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+  return unlockedEvents.sort(
+    (a, b) => new Date(b.timestamp) - new Date(a.timestamp),
+  );
 }
 
 async function syncAllPsnData() {
@@ -158,12 +181,13 @@ async function syncAllPsnData() {
   }
 
   const auth = await getAuth();
-  const [trophySummary, devicesResponse, playedGames, trophyTitles] = await Promise.all([
-    getUserTrophyProfileSummary(auth, "me"),
-    getAccountDevices(auth).catch(() => ({ accountDevices: [] })),
-    fetchAllPlayedGames(auth),
-    fetchAllTrophyTitles(auth),
-  ]);
+  const [trophySummary, devicesResponse, playedGames, trophyTitles] =
+    await Promise.all([
+      getUserTrophyProfileSummary(auth, "me"),
+      getAccountDevices(auth).catch(() => ({ accountDevices: [] })),
+      fetchAllPlayedGames(auth),
+      fetchAllTrophyTitles(auth),
+    ]);
 
   const trophyMap = new Map();
   for (const t of trophyTitles) {
@@ -182,7 +206,9 @@ async function syncAllPsnData() {
       : 0;
 
     const avgMinutesPerSession =
-      game.playCount > 0 ? Math.round(duration.seconds / 60 / game.playCount) : 0;
+      game.playCount > 0
+        ? Math.round(duration.seconds / 60 / game.playCount)
+        : 0;
 
     return {
       titleId: game.titleId,
@@ -199,7 +225,9 @@ async function syncAllPsnData() {
       trophyProgress: matchedTrophy ? `${matchedTrophy.progress}%` : "N/A",
       trophyProgressVal: matchedTrophy ? matchedTrophy.progress : -1,
       trophiesEarned: earnedTotal,
-      hasPlatinum: matchedTrophy ? matchedTrophy.earnedTrophies.platinum > 0 : false,
+      hasPlatinum: matchedTrophy
+        ? matchedTrophy.earnedTrophies.platinum > 0
+        : false,
       npCommunicationId: matchedTrophy ? matchedTrophy.npCommunicationId : null,
       trophyPlatform: matchedTrophy ? matchedTrophy.trophyTitlePlatform : null,
       rawTrophyData: matchedTrophy || null,
@@ -208,9 +236,14 @@ async function syncAllPsnData() {
 
   const sortedByHours = [...mergedGames].sort((a, b) => b.hours - a.hours);
 
-  console.log("📊 Updating daily playtime log & scanning recent trophy timestamps...");
+  console.log(
+    "📊 Updating daily playtime log & scanning recent trophy timestamps...",
+  );
   const dailyLog = updateDailyPlaytimeLog(mergedGames);
-  const recentTrophyEvents = await fetchRecentTrophyTimestamps(auth, mergedGames);
+  const recentTrophyEvents = await fetchRecentTrophyTimestamps(
+    auth,
+    mergedGames,
+  );
 
   const fullDump = {
     fetchedAt: new Date().toISOString(),
@@ -230,7 +263,8 @@ async function syncAllPsnData() {
 app.get("/api/psn-data", (req, res) => {
   if (!fs.existsSync(DATA_PATH)) {
     return res.status(404).json({
-      error: "psn_full_data.json not found. Click 'Sync Live PSN Data' to pull it!",
+      error:
+        "psn_full_data.json not found. Click 'Sync Live PSN Data' to pull it!",
     });
   }
   const rawData = JSON.parse(fs.readFileSync(DATA_PATH, "utf-8"));
@@ -298,6 +332,10 @@ app.get("/api/game-trophies/:npCommId", async (req, res) => {
 app.post("/api/update-game-meta", (req, res) => {
   try {
     const { titleId, price, rating, notes } = req.body;
+    if (!titleId) {
+      return res.status(400).json({ error: "Missing titleId" });
+    }
+
     if (!fs.existsSync(DATA_PATH)) {
       return res.status(404).json({ error: "psn_full_data.json not found" });
     }
@@ -305,17 +343,167 @@ app.post("/api/update-game-meta", (req, res) => {
     const rawData = JSON.parse(fs.readFileSync(DATA_PATH, "utf-8"));
     if (!rawData.gameMeta) rawData.gameMeta = {};
 
-    const prev = rawData.gameMeta[titleId] || {};
-    rawData.gameMeta[titleId] = {
+    // Ensure titleId is stored as a clean string key
+    const key = String(titleId);
+    const prev = rawData.gameMeta[key] || {};
+
+    rawData.gameMeta[key] = {
       price: price !== undefined && price !== "" ? parseFloat(price) : (prev.price || 0),
       rating: rating !== undefined ? parseInt(rating, 10) : (prev.rating || 0),
       notes: notes !== undefined ? notes : (prev.notes || ""),
     };
 
     fs.writeFileSync(DATA_PATH, JSON.stringify(rawData, null, 2));
+    console.log(`💾 Saved metadata for titleId: ${key} -> Price: $${rawData.gameMeta[key].price}`);
     res.json({ success: true, gameMeta: rawData.gameMeta });
   } catch (err) {
+    console.error("Failed to save game meta:", err);
     res.status(500).json({ error: err.message });
+  }
+});
+
+// 5. Fetch Live External Game Info (Genres, Synopsis, Release Date, Ratings & Screenshots)
+const https = require("https");
+const gameInfoCache = new Map();
+
+// Helper that works across all Node versions and follows redirects cleanly
+function fetchJson(url) {
+  return new Promise((resolve, reject) => {
+    const req = https.get(
+      url,
+      {
+        headers: {
+          "User-Agent":
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) PSNTracker/1.0 (https://localhost:3000)",
+          Accept: "application/json",
+          "Accept-Language": "en-GB,en;q=0.9",
+        },
+      },
+      (res) => {
+        if (
+          res.statusCode >= 300 &&
+          res.statusCode < 400 &&
+          res.headers.location
+        ) {
+          return fetchJson(res.headers.location).then(resolve).catch(reject);
+        }
+        let raw = "";
+        res.on("data", (chunk) => (raw += chunk));
+        res.on("end", () => {
+          try {
+            resolve(JSON.parse(raw));
+          } catch (e) {
+            resolve(null);
+          }
+        });
+      },
+    );
+    req.on("error", () => resolve(null));
+    req.setTimeout(6000, () => {
+      req.destroy();
+      resolve(null);
+    });
+  });
+}
+
+app.get("/api/game-info", async (req, res) => {
+  const rawTitle = req.query.title || "";
+  const cleanTitle = rawTitle
+    .replace(/trophies$/i, "")
+    .replace(/[™®©]/g, "")
+    .replace(/\s*\(PS4.*?\)/gi, "")
+    .replace(/\s*\(PS5.*?\)/gi, "")
+    .replace(/\s*-\s*PS5.*$/gi, "")
+    .trim();
+
+  if (!cleanTitle) {
+    return res.status(400).json({ error: "Missing game title" });
+  }
+
+  const cacheKey = cleanTitle.toLowerCase();
+  if (gameInfoCache.has(cacheKey)) {
+    return res.json(gameInfoCache.get(cacheKey));
+  }
+
+  console.log(`🔍 Fetching external game info for: "${cleanTitle}"`);
+
+  let info = {
+    title: cleanTitle,
+    description: null,
+    shortDescription: null,
+    developers: [],
+    publishers: [],
+    genres: [],
+    releaseDate: null,
+    metacritic: null,
+    screenshots: [],
+    sourceUrl: null,
+  };
+
+  try {
+    // 1. Query Steam Store Search + AppDetails API
+    const steamSearchUrl = `https://store.steampowered.com/api/storesearch/?term=${encodeURIComponent(cleanTitle)}&l=english&cc=US`;
+    const searchRes = await fetchJson(steamSearchUrl);
+
+    if (searchRes?.items?.length > 0) {
+      const appId = searchRes.items[0].id;
+      const detailsUrl = `https://store.steampowered.com/api/appdetails?appids=${appId}&l=english`;
+      const detailsRes = await fetchJson(detailsUrl);
+      const appData = detailsRes?.[appId]?.data;
+
+      if (appData) {
+        // Strip any HTML tags from Steam's short_description
+        info.shortDescription = appData.short_description
+          ? appData.short_description.replace(/<[^>]*>?/gm, "")
+          : null;
+        info.developers = appData.developers || [];
+        info.publishers = appData.publishers || [];
+        info.genres = (appData.genres || []).map((g) => g.description);
+        info.releaseDate = appData.release_date?.date || null;
+        info.metacritic = appData.metacritic?.score || null;
+        info.screenshots = (appData.screenshots || [])
+          .slice(0, 4)
+          .map((s) => s.path_thumbnail);
+        info.sourceUrl = `https://store.steampowered.com/app/${appId}`;
+      }
+    }
+
+    // 2. Query Wikipedia MediaWiki API (Single-step search + plain-text intro extract)
+    const wikiQueryUrl = `https://en.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(
+      cleanTitle + " video game",
+    )}&gsrlimit=1&prop=extracts|info&exintro=1&explaintext=1&inprop=url&format=json`;
+
+    const wikiData = await fetchJson(wikiQueryUrl);
+    const pages = wikiData?.query?.pages;
+
+    if (pages) {
+      const firstPage = Object.values(pages)[0];
+      if (firstPage?.extract) {
+        // Grab the first 2 paragraphs so it's a clean, readable synopsis
+        const paragraphs = firstPage.extract
+          .split("\n")
+          .map((p) => p.trim())
+          .filter((p) => p.length > 40);
+        info.description =
+          paragraphs.slice(0, 2).join("\n\n") || firstPage.extract;
+        if (!info.sourceUrl && firstPage.fullurl) {
+          info.sourceUrl = firstPage.fullurl;
+        }
+      }
+    }
+
+    // Only cache if we actually found something so temporary network hiccups don't stick
+    if (info.description || info.shortDescription) {
+      gameInfoCache.set(cacheKey, info);
+    }
+
+    console.log(
+      `✅ Game Info resolved for "${cleanTitle}" -> Steam: ${Boolean(info.shortDescription)}, Wiki: ${Boolean(info.description)}`,
+    );
+    res.json(info);
+  } catch (err) {
+    console.error("Failed to fetch external game info:", err.message);
+    res.json(info);
   }
 });
 
